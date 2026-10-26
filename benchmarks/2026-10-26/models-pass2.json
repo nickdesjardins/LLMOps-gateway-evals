@@ -1,0 +1,562 @@
+{
+ "measured_at": "2026-10-26T12:52:52Z",
+ "cases": [
+  "grounded",
+  "refusal",
+  "synthesis",
+  "judge"
+ ],
+ "light_max_median_s": 12.0,
+ "models": [
+  {
+   "model": "recursive/flint-v1.0:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 4.31,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 7.39,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1], and from the fifth anniversary of their start date they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.9,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 6.37,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable should call the supplier back on a phone number already on file, not use a number from the same email, before entering the new bank details; changes need approval from two people in accounts payable and the first payment to the new account is held for 5 business days [S1].\n\nIf the email is suspicious, the recipient should report it with the Report Phish button in Outlook or forward it as an attachment to security@cedarridge.example, and should not click its links or open its attachments [S2]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.25,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states full-time employees accrue 20 vacation days per year.\"}, {\"verdict\": \"no\", \"reason\": \"The context says from the fifth anniversary they accrue 25 days, not 30 from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "xingchen-agi/xing4.0-29b-a4b:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 1.43,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.81,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.84,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.89,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.43,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\":[{\"verdict\":\"yes\",\"reason\":\"The context states that full-time employees accrue 20 vacation days per year, which directly supports the first claim.\"},{\"verdict\":\"no\",\"reason\":\"The context does not mention anything about 30 vacation days from the first day. It only states that employees get 20 vacation days per year, and from their fifth anniversary they accrue 25 days per year. There is no information to support the claim of 30 vacation days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3.5-super-vl:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 1.07,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 2.19,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year, and from their fifth anniversary they accrue 25 days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.58,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 1.17,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file, never a number given in the same email, and obtain approval from two people in accounts payable before changing bank details; the first payment to the new account is held for 5 business days. [S1] The recipient should report the suspicious email using the Report Phish button in Outlook or forward it as an attachment to security@cedarridge.example, without clicking links or opening attachments. [S2]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 0.97,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year.\"}, {\"verdict\": \"no\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year from the start, and 25 days per year from the fifth anniversary, not 30 days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "dots-studio/dots-3-note-preview:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 2.42,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 1.53,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1]. From the fifth anniversary of their start date, they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 2.37,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 2.72,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file, never a number given in the same email or letter [S1]. The change also requires the approval of two people in accounts payable, and the first payment to the new account must be held for 5 business days [S1]. The person who received the suspicious email should report it using the Report Phish button in Outlook or by forwarding it as an attachment to security@cedarridge.example [S2]. They must not click any links or open any attachments in that email [S2]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.46,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context states that full-time employees accrue 20 days per year initially, and only 25 days from the fifth anniversary; it does not mention 30 days at any point, contradicting the claim.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "liquid/lfm-2.5-2.6b:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 0.98,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.27,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.21,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 1.02,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable should call the supplier back on a phone number already on file before entering any new bank details, as per the supplier onboarding procedure [S1]. A request to change bank details also requires approval from two people in accounts payable, and the first payment to the new account is held for 5 business days [S1]. The person who received the email should report it by using the Report Phish button in Outlook or by forwarding it as an attachment to security@cedarridge.example [S2]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 0.95,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year.\"}, {\"verdict\": \"no\", \"reason\": \"The context says they accrue 20 days per year, not 30, and the increase to 25 days only occurs after the fifth anniversary, not from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3.5-lightning:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 0.96,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.78,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year. From the fifth anniversary of their start date, they accrue 25 days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.47,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 1.14,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on the phone number already on file to verify the new bank details, then obtain approval from two people in accounts payable before processing the first payment, which will be held for 5 business days. The person who received the email should report it as phishing by using the Report Phish button in Outlook or forwarding it as an attachment to security@cedarridge.example. [S1][S2]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.35,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context states employees accrue 20 days per year from the start, and only reach 25 days after the fifth anniversary. It does not state 30 days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "poolside/laguna-s-2.1:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 4.3,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.18,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.35,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 6.14,
+     "why": "the answer cites no passage",
+     "failure": null,
+     "answer": "Accounts payable should not use the new bank details from the email; instead, they must call the supplier back on a phone number already on file, get approval from two people in accounts payable, and hold the first payment to the new account for 5 business days. The person who received the email should report it as a phishing attempt using the Report Phish button in Outlook or by forwarding it as an attachment to security@cedarridge.example, without clicking any links or opening attachments."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.46,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context contradicts the claim by stating full-time employees accrue 20 days per year, not 30, and the 25-day accrual only begins from the fifth anniversary, not from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "poolside/laguna-xs-2.1:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": 1.22,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.18,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.21,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 1.22,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable should call the supplier back on a phone number already on file to verify the new bank details, and if confirmed, require approval from two people in accounts payable before updating the account, with the first payment to the new account held for 5 business days [S1]. The person who received the email should report the suspicious email using the Report Phish button in Outlook or forward it as an attachment to security@cedarridge.example [S2]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.19,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "cohere/north-mini-code:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 1.08,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 1.41,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1]. After five years of service, they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.4,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 3.85,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file before entering any new bank details, and any change request requires approval from two people in accounts payable with the first payment to the new account held for 5 business days [S1]. The person who received the email should report it as suspicious using the Report Phish button in Outlook or forward it as an attachment to security@cedarridge.example without clicking any links or opening attachments [S2]. The payment terms are net 45 days, with possible early payment discounts of 2% for payment within 10 days if offered by the supplier [S3]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 0.76,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which directly supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context says full-time employees accrue 20 vacation days per year (and 25 days after the fifth anniversary), not 30 days from the first day, so the claim is contradicted.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 2.89,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 1.36,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year, and from their fifth anniversary they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.85,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 4.41,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file, obtain approval from two people in accounts payable, and hold the first payment to the new account for 5 business days [S1]. The person who received the email should report it using the Report Phish button in Outlook or forward it as an attachment to security@cedarridge.example [S2]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 13.93,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context states employees accrue 20 days per year initially and 25 days from the fifth anniversary, not 30 days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": 1.8,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.71,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.3,
+     "why": "upstream provider error (code 502)",
+     "failure": "upstream",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 2.9,
+     "why": "",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file, obtain approval from two people in accounts payable, and hold the first payment to the new account for 5 business days [S1]. The person who received the email should report it by using the Report Phish button in Outlook or forwarding it as an attachment to security@cedarridge.example [S2]. The passages do not specify how to verify that the new bank details are authentic beyond the required callback [S1]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.2,
+     "why": "upstream provider error (code 502)",
+     "failure": "upstream",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-26b-a4b-it:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.33,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.31,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.26,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.27,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-31b-it:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.28,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.36,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 1.98,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.26,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  }
+ ]
+}

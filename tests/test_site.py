@@ -24,7 +24,7 @@ RECORDED = SITE / "recorded"
 PLAYGROUND = ROOT / "app" / "playground" / "static"
 PAGES = [SITE / "index.html", PLAYGROUND / "index.html"]
 SECRET_MARKERS = ("sk-or-", "sk-ant-", "Bearer ", "rediss://", "pk-lf-", "sk-lf-")
-REPOSITORY = "https://github.com/nickdesjardins/production-LLMOps-gateway-evals"
+REPOSITORY = "https://github.com/nickdesjardins/LLMOps-gateway-evals"
 
 
 def _read(path: Path) -> str:
@@ -127,6 +127,13 @@ def test_the_page_prices_match_the_price_book() -> None:
         assert match, tier
         assert float(match.group(1)) == float(BUILTIN_PRICES[model].input)
         assert float(match.group(2)) == float(BUILTIN_PRICES[model].output)
+
+
+def test_the_ragas_judge_default_is_the_service_s() -> None:
+    from app.config import DEFAULT_OPENROUTER_JUDGE
+
+    match = re.search(r'^DEFAULT_MODELS = "([^"]+)"', _read(ROOT / "evals" / "score_ragas.py"), re.MULTILINE)
+    assert match and match.group(1) == DEFAULT_OPENROUTER_JUDGE
 
 
 def test_the_published_thresholds_are_the_gate_s() -> None:
@@ -268,7 +275,7 @@ def test_the_recorded_story_holds() -> None:
     assert events[0] == "meta" and events[-1] == "done" and "delta" in events
     if "failover" in runs:
         attempts = runs["failover"]["response"]["attempts"]
-        assert attempts[0]["outcome"] == "not_found" and attempts[-1]["outcome"] == "ok"
+        assert attempts[0]["outcome"] in {"not_found", "bad_request"} and attempts[-1]["outcome"] == "ok"
 
 
 def test_the_threshold_measurement_is_consistent() -> None:

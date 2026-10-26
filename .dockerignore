@@ -18,3 +18,5 @@ evals/
 .fastembed_cache/
 local_cache/
 README.md
+model_cache.json
+benchmarks/

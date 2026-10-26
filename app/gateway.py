@@ -209,6 +209,7 @@ class ChatGateway:
             cross_tier=self.cascade.cross_tier,
             deadline_s=self.cascade.deadline_s,
             model_timeout_s=self.cascade.model_timeout_s,
+            listener=self.cascade.listener,
         )
 
     def _factory(self, prepared: ChatPrepared) -> RequestFactory:

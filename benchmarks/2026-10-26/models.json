@@ -1,0 +1,641 @@
+{
+ "measured_at": "2026-10-26T12:45:31Z",
+ "cases": [
+  "grounded",
+  "refusal",
+  "synthesis",
+  "judge"
+ ],
+ "light_max_median_s": 12.0,
+ "models": [
+  {
+   "model": "recursive/flint-v1.0:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 3.34,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 3.13,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1]. From the fifth anniversary of their start date, full-time employees accrue 25 vacation days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 3.56,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 6.77,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Accounts payable should call the supplier back on the phone number already on file, not the number in the same email or letter. [S1]  \nAfter the callback, accounts payable may enter the new bank details, and a change needs approval from two people in accounts payable. [S1]  \nThe first payment to the new account should be held for 5 business days. [S1]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.16,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states full-time employees accrue 20 vacation days per year.\"}, {\"verdict\": \"no\", \"reason\": \"The context says from the fifth anniversary they accrue 25 days, not 30 from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "xingchen-agi/xing4.0-29b-a4b:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 1.58,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.81,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.7,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.49,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3.5-super-vl:free",
+   "verdict": "passed",
+   "roles": [
+    "light"
+   ],
+   "median_s": 0.77,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.77,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year, and from the fifth anniversary of their start date they accrue 25 days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.52,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 1.08,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Call the supplier back on a phone number already on file, never a number given in the same email or letter.[S1] Obtain approval from two people in accounts payable.[S1] Hold the first payment to the new account for 5 business days.[S1]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.3,
+     "why": "HTTP 502",
+     "failure": "upstream",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "dots-studio/dots-3-note-preview:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 2.04,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 1.91,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1]. From the fifth anniversary of their start date, they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 1.74,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 2.38,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back using a phone number already on file, not any number provided in the email [S1]. The request to change bank details requires approval from two people in accounts payable [S1]. The first payment to the new account must be held for 5 business days [S1]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.16,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context specifies 20 days per year initially and 25 days after the fifth anniversary, not 30 days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "liquid/lfm-2.5-2.6b:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 1.07,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.37,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.14,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.21,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.07,
+     "why": "",
+     "failure": null,
+     "answer": "{\n  \"verdicts\": [\n    {\n      \"verdict\": \"yes\",\n      \"reason\": \"The context states that full-time employees accrue 20 vacation days per year.\"\n    },\n    {\n      \"verdict\": \"no\",\n      \"reason\": \"The context says they accrue 20 days per year from the first day, not 30.\"\n    }\n  ]\n}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3.5-lightning:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 1.23,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 2.98,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year. From the fifth anniversary of their start date, they accrue 25 days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.48,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 0.89,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on the phone number already on file, never a number provided in the email. After the callback, the request to change bank details requires approval from two people in accounts payable, and the first payment to the new account is held for 5 business days. [S1]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.56,
+     "why": "",
+     "failure": null,
+     "answer": "{\n  \"verdicts\": [\n    {\n      \"verdict\": \"yes\",\n      \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which directly supports the claim.\"\n    },\n    {\n      \"verdict\": \"no\",\n      \"reason\": \"The context states that employees accrue 20 days per year initially, and only from the fifth anniversary do they accrue 25 days per year. It does not mention 30 days, nor does it mention 30 days from the first day.\"\n    }\n  ]\n}"
+    }
+   ]
+  },
+  {
+   "model": "thinkingmachines/inkling-small:free",
+   "verdict": "unreachable",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "unreachable",
+     "seconds": 0.11,
+     "why": "the key was refused (403)",
+     "failure": "auth",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "poolside/laguna-s-2.1:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 4.68,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 3.18,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 1.67 vacation days per month of service, which is 20 days per year, and from the fifth anniversary of their start date they accrue 25 days per year. [S1]"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.17,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 4.68,
+     "why": "the answer cites no passage",
+     "failure": null,
+     "answer": "Accounts payable should not use the bank details from the email. Instead, they must call the supplier back on a phone number already on file (never the number in the email) to verify the request. The change requires approval from two people in accounts payable, and the first payment to the new account is held for 5 business days."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 5.82,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which directly supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context contradicts the claim because it specifies 20 vacation days per year (not 30) and does not mention 30 days from the first day; instead, it mentions 25 days per year starting from the fifth anniversary.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "thinkingmachines/inkling:free",
+   "verdict": "unreachable",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "unreachable",
+     "seconds": 0.11,
+     "why": "the key was refused (403)",
+     "failure": "auth",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "poolside/laguna-xs-2.1:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": 0.77,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.77,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year, which increases to 25 days per year from the fifth anniversary of their start date [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.18,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.16,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.18,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "cohere/north-mini-code:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 0.82,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.64,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year [S1]. After five years of service, they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.44,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 1.71,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Accounts payable should first call the supplier back on a phone number already on file to verify the new bank details [S1]. They must obtain approval for the change from two people in accounts payable [S1]. After approval, the first payment to the new account will be held for 5 business days [S1]. The request to change bank details follows the same callback process [S1]. No payment should be processed based solely on the email containing the new details."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.01,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which directly supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context says full-time employees accrue 20 vacation days per year (and 25 days after the fifth anniversary), not 30 days from the first day, so the claim is contradicted.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3.5-content-safety:free",
+   "verdict": "failed",
+   "roles": [],
+   "median_s": 0.92,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "wrong",
+     "seconds": 0.36,
+     "why": "the answer cites no passage",
+     "failure": null,
+     "answer": "User Safety: safe"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "wrong",
+     "seconds": 1.94,
+     "why": "answered a question the passages do not answer",
+     "failure": null,
+     "answer": "User Safety: safe"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 0.37,
+     "why": "the answer cites no passage",
+     "failure": null,
+     "answer": "User Safety: safe"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "wrong",
+     "seconds": 1.46,
+     "why": "no JSON object",
+     "failure": null,
+     "answer": "User Safety: safe"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 1.34,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 0.94,
+     "why": "",
+     "failure": null,
+     "answer": "Full-time employees accrue 20 vacation days per year, and from their fifth anniversary they accrue 25 days per year [S1]."
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.75,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 1.75,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Accounts payable must call the supplier back on a phone number already on file, not the one in the email [S1]. The change request needs approval from two people in accounts payable [S1]. After the change is made, the first payment to the new account is held for 5 business days [S1]."
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.06,
+     "why": "",
+     "failure": null,
+     "answer": "{\"verdicts\": [{\"verdict\": \"yes\", \"reason\": \"The context states that full-time employees accrue 20 vacation days per year, which supports the claim.\"}, {\"verdict\": \"no\", \"reason\": \"The context states employees accrue 20 days per year initially and 25 days from the fifth anniversary, not 30 days from the first day.\"}]}"
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": 1.09,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.15,
+     "why": "upstream provider error (code 502)",
+     "failure": "upstream",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 0.39,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 1.8,
+     "why": "cited a single passage for a two-passage answer",
+     "failure": null,
+     "answer": "Call the supplier back using a phone number already on file, not the number in the email.\u202f[S1]  \nObtain approval from two people in accounts payable for the change.\u202f[S1]  \nEnter the new bank details only after the callback and approval are completed.\u202f[S1]  \nHold the first payment to the new account for 5 business days.\u202f[S1]"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.29,
+     "why": "upstream provider error (code 502)",
+     "failure": "upstream",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-26b-a4b-it:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": 2.0,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.26,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 2.0,
+     "why": "",
+     "failure": null,
+     "answer": "INSUFFICIENT_CONTEXT"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.24,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.25,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-31b-it:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.3,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.25,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.26,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.51,
+     "why": "rate limited (429)",
+     "failure": "rate_limited",
+     "answer": ""
+    }
+   ]
+  },
+  {
+   "model": "nvidia/nemotron-3-super-120b-a12b:free",
+   "verdict": "unreachable",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "unreachable",
+     "seconds": 0.17,
+     "why": "model not found (404); withdrawn?",
+     "failure": "not_found",
+     "answer": ""
+    }
+   ]
+  }
+ ]
+}

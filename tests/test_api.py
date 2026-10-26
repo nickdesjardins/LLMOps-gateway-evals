@@ -171,3 +171,14 @@ async def test_the_playground_is_served(client_and_components: Any) -> None:
     page = await client.get("/")
     assert page.status_code == 200 and "text/html" in page.headers["content-type"]
     assert page.headers["cache-control"] == "no-cache"
+
+
+async def test_the_models_route_shows_the_chains(client_and_components: Any) -> None:
+    client, _ = client_and_components
+    picture = (await client.get("/api/v1/models")).json()
+    assert picture["mode"] == "pinned"  # the suite names its chains
+    assert picture["chains"] == {
+        "light": ["light/a:free", "light/b:free"],
+        "heavy": ["heavy/a:free", "heavy/b:free"],
+    }
+    assert picture["benched"] == {} and picture["judge"]

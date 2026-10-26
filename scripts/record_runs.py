@@ -219,7 +219,7 @@ async def record(args: argparse.Namespace) -> int:
 
 
 async def record_failover(settings: Settings, args: argparse.Namespace) -> dict[str, Any]:
-    """A light chain whose first model does not exist: a real 404, then the next model answers."""
+    """A light chain whose first model does not exist: a real refusal, then the next model answers."""
     chain = ",".join([BOGUS_MODEL, *settings.chain("light")])
     patched = Settings(
         demo_mode=False,
@@ -241,7 +241,7 @@ async def record_failover(settings: Settings, args: argparse.Namespace) -> dict[
     return {
         "id": "failover",
         "title": "Failover: the first model of the chain is gone",
-        "why": f"The light chain starts with {BOGUS_MODEL}, which does not exist. The 404 is recorded and the next model answers.",
+        "why": f"The light chain starts with {BOGUS_MODEL}, which does not exist. OpenRouter refuses the call, the failure is recorded, and the next model answers.",
         "endpoint": "POST /api/v1/ask",
         "request": body,
         "status": response.status_code,

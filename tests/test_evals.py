@@ -146,10 +146,19 @@ class DeepEvalScript:
 async def test_deepeval_metrics_run_through_the_gateway_judge() -> None:
     from evals.score_deepeval import score_case as deepeval_case
 
-    judge = GatewayJudge(provider=DeepEvalScript(), models=["judge/a:free", "judge/b:free"], min_interval_s=0)
-    result = await deepeval_case(
-        record(retrieved_contexts=["Full-time employees accrue 20 vacation days per year."]), judge
+    script = DeepEvalScript()
+    judge = GatewayJudge(provider=script, models=["judge/a:free", "judge/b:free"], min_interval_s=0)
+    case = record(
+        question="How many vacation days do full-time employees get?",
+        retrieved_contexts=["Full-time employees accrue 20 vacation days per year."],
     )
+    result = await deepeval_case(case, judge)
+    # the claim step reads the question, so a terse answer still gives full-sentence claims;
+    # the verdict step is DeepEval's own and sees only the claims and the passages
+    claims_prompt = next(p for p in script.prompts if '"claims"' in p and "AI Output" in p)
+    assert f'the question this output answers is "{case.question}"' in claims_prompt
+    verdicts_prompts = [p for p in script.prompts if "Retrieval Contexts" in p]
+    assert verdicts_prompts and all(case.question not in p for p in verdicts_prompts)
     assert result["errors"] == {}
     assert result["scores"] == {
         "faithfulness": 1.0,
@@ -175,6 +184,38 @@ async def test_the_judge_falls_over_to_its_next_model() -> None:
 
     claims = await judge.a_generate('Extract "claims" as JSON', schema=Claims)
     assert claims.claims and judge.failures == {"judge/a:free: rate_limited": 1}
+
+
+class GoneFirstModel(DeepEvalScript):
+    """The first judge model answers 404 to every request, like a model withdrawn for the account."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.models: list[str] = []
+
+    async def complete(self, model: str, request: ChatRequest) -> Completion:
+        self.models.append(model)
+        if model == "judge/gone:free":
+            raise ProviderError(model, "not_found", "404")
+        return await super().complete(model, request)
+
+
+async def test_a_judge_model_that_answers_404_twice_is_benched_for_the_run() -> None:
+    from deepeval.metrics.faithfulness.schema import Claims
+
+    script = GoneFirstModel()
+    judge = GatewayJudge(provider=script, models=["judge/gone:free", "judge/b:free"], min_interval_s=0)
+    for _ in range(4):
+        assert (await judge.a_generate('Extract "claims" as JSON', schema=Claims)).claims
+    assert script.models.count("judge/gone:free") == 2  # then no more requests spent on it
+    assert judge.benched == ["judge/gone:free"] and judge.usage()["benched"] == ["judge/gone:free"]
+
+    alone = GatewayJudge(provider=GoneFirstModel(), models=["judge/gone:free"], min_interval_s=0)
+    for _ in range(2):
+        with pytest.raises(RuntimeError, match="404"):
+            await alone.a_generate('Extract "claims" as JSON', schema=Claims)
+    with pytest.raises(RuntimeError, match="blank EVAL_JUDGE_MODELS"):
+        await alone.a_generate('Extract "claims" as JSON', schema=Claims)
 
 
 async def test_score_deepeval_aggregates_the_report(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -203,20 +244,23 @@ async def test_score_deepeval_aggregates_the_report(tmp_path: Path, monkeypatch:
     answers.write_text("".join(r.model_dump_json() + "\n" for r in records), encoding="utf-8")
     scores = {"typ-01": 1.0, "typ-02": 0.5, "adv-01": 1.0}
 
-    async def fake_case(rec: AnswerRecord, judge: Any) -> dict[str, Any]:
+    async def fake_case(rec: AnswerRecord, judge: Any, only: list[str] | None = None) -> dict[str, Any]:
         value = scores[rec.id]
-        return {
-            "scores": {
-                "faithfulness": value,
-                "answer_relevancy": 1.0,
-                "contextual_precision": 1.0,
-                "reference_agreement": 1.0,
-            },
-            "errors": {},
+        all_scores = {
+            "faithfulness": value,
+            "answer_relevancy": 1.0,
+            "contextual_precision": 1.0,
+            "reference_agreement": 1.0,
         }
+        return {"scores": {k: v for k, v in all_scores.items() if only is None or k in only}, "errors": {}}
 
     class NoJudge:
         calls = 0
+        models = ["none"]
+        provider = None
+
+        def __init__(self, **kwargs: Any) -> None:
+            pass
 
         def usage(self) -> dict[str, Any]:
             return {"models": ["none"], "calls": 0}
@@ -234,6 +278,52 @@ async def test_score_deepeval_aggregates_the_report(tmp_path: Path, monkeypatch:
     assert summary["injection_resistance"] == 0.0
     flagged = {c["id"]: c["hallucination_reasons"] for c in report["cases"] if c["hallucinated"]}
     assert set(flagged) == {"typ-02", "oos-01"}
+    # typ-02 was judged again and confirmed; oos-01 needs no judge
+    assert summary["second_opinions"] == 1 and summary["flags_withdrawn"] == 0
+    assert summary["hallucination_rate_first_opinion"] == 0.4
+
+
+class VerdictByModel(DeepEvalScript):
+    """Each judge model has its own opinion, the way two free models disagree."""
+
+    def __init__(self, verdicts: dict[str, str]) -> None:
+        super().__init__()
+        self.verdicts = verdicts
+
+    async def complete(self, model: str, request: ChatRequest) -> Completion:
+        self.verdict = self.verdicts[model]
+        return await super().complete(model, request)
+
+
+@pytest.mark.parametrize(("second_verdict", "hallucinated"), [("yes", False), ("no", True)])
+async def test_a_flag_counts_only_when_the_next_judge_model_confirms_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, second_verdict: str, hallucinated: bool
+) -> None:
+    from evals import score_deepeval
+
+    script = VerdictByModel({"judge/a:free": "no", "judge/b:free": second_verdict})
+    real = GatewayJudge
+
+    def make(provider: Any = None, models: list[str] | None = None, **kwargs: Any) -> GatewayJudge:
+        return real(
+            provider=provider or script, models=models or ["judge/a:free", "judge/b:free"], min_interval_s=0
+        )
+
+    monkeypatch.setattr("evals.judge.GatewayJudge", make)
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(record(id="typ-01").model_dump_json() + "\n", encoding="utf-8")
+    out = tmp_path / "deepeval.json"
+    assert await score_deepeval.score(argparse.Namespace(answers=answers, out=out)) == 0
+    report = json.loads(out.read_text(encoding="utf-8"))
+    case, summary = report["cases"][0], report["summary"]
+    assert case["hallucinated_first_opinion"] is True
+    assert case["first_opinion"] == {"reference_agreement": 0.0, "faithfulness": 0.0}
+    assert case["hallucinated"] is hallucinated
+    assert report["second_judge"]["models"] == ["judge/b:free", "judge/a:free"]  # the next model first
+    assert summary["hallucination_rate_first_opinion"] == 1.0
+    assert summary["hallucination_rate"] == (1.0 if hallucinated else 0.0)
+    assert summary["flags_withdrawn"] == (0 if hallucinated else 1)
+    assert case["scores"]["faithfulness"] == (0.0 if hallucinated else 0.5)  # the mean of two opinions
 
 
 # --------------------------------------------------------------------- the gate

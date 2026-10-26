@@ -245,9 +245,10 @@ async def health(components: Components = Depends(get_components)) -> HealthResp
         provider={
             "name": settings.llm_provider,
             "configured": components.provider_ready,
-            "light": settings.chain("light"),
-            "heavy": settings.chain("heavy"),
+            "light": list(components.chooser.chains["light"]),
+            "heavy": list(components.chooser.chains["heavy"]),
             "cross_tier_fallback": settings.cross_tier_fallback,
+            "models": components.chooser.picture(),
         },
         cache={
             "backend": components.store.name if components.store is not None else "off",
@@ -386,6 +387,12 @@ async def metrics(components: Components = Depends(get_components)) -> dict[str,
     return snapshot
 
 
+@router.get("/api/v1/models", tags=["ops"])
+async def models(components: Components = Depends(get_components)) -> dict[str, Any]:
+    """The chains in use, where they came from, what was benched, and the last test."""
+    return components.chooser.picture()
+
+
 @router.get("/api/v1/traces", tags=["ops"])
 async def traces(limit: int = 20, components: Components = Depends(get_components)) -> dict[str, Any]:
     limit = max(1, min(limit, 100))
@@ -444,7 +451,11 @@ async def playground_config(components: Components = Depends(get_components)) ->
         "demo_mode": settings.demo_mode,
         "provider": settings.llm_provider,
         "provider_ready": components.provider_ready,
-        "chains": {"light": settings.chain("light"), "heavy": settings.chain("heavy")},
+        "chains": {
+            "light": list(components.chooser.chains["light"]),
+            "heavy": list(components.chooser.chains["heavy"]),
+        },
+        "models": components.chooser.picture(),
         "reference_models": {
             "light": settings.reference_model_light,
             "heavy": settings.reference_model_heavy,

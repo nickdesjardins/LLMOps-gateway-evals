@@ -12,7 +12,9 @@ JSON and runs in its own environment (``requirements-ragas.txt``), in its own CI
   ranked first.
 
 The judge is any OpenAI-compatible endpoint: OpenRouter's free models by default
-(``RAGAS_JUDGE_MODELS``, ``OPENROUTER_API_KEY``). Requests are paced
+(``OPENROUTER_API_KEY``). ``RAGAS_JUDGE_MODELS`` names the models; left blank, the judge chain the
+scheduled model test published on the ``tested-models`` branch is used (checked here: one to three
+``:free`` ids), and the measured default when nothing usable is published. Requests are paced
 (``RAGAS_MIN_INTERVAL_S``, 3.2 s) by an HTTP hook, since Ragas sends several per metric.
 
     python evals/score_ragas.py                # reads evals/out/answers.jsonl, writes ragas.json
@@ -24,6 +26,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -32,7 +35,39 @@ from typing import Any
 os.environ.setdefault("RAGAS_DO_NOT_TRACK", "true")
 
 OUT_DIR = Path(__file__).resolve().parent / "out"
-DEFAULT_MODELS = "nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free"
+#: Kept equal to DEFAULT_OPENROUTER_JUDGE in app/config.py (tests/test_site.py checks it).
+DEFAULT_MODELS = "dots-studio/dots-3-note-preview:free,nvidia/nemotron-3-ultra-550b-a55b:free"
+PUBLISHED_URL = (
+    "https://raw.githubusercontent.com/nickdesjardins/LLMOps-gateway-evals/tested-models/chain.json"
+)
+FREE_ID = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}/[a-z0-9][a-z0-9._-]{0,95}:free")
+#: A judge model that answered 404 or 400 this many times gets no more requests for the rest of
+#: the run (it cannot be called from this account), as in evals/judge.py.
+BENCH_AFTER = 2
+
+
+def judge_models() -> list[str]:
+    """RAGAS_JUDGE_MODELS, else the published judge chain, else the default."""
+    named = [m.strip() for m in os.environ.get("RAGAS_JUDGE_MODELS", "").split(",") if m.strip()]
+    if named:
+        return named
+    try:
+        import urllib.request
+
+        with urllib.request.urlopen(
+            os.environ.get("MODEL_PUBLISHED_URL", PUBLISHED_URL), timeout=10
+        ) as response:
+            chain = json.loads(response.read(64_001))["chains"]["judge"]
+        if (
+            isinstance(chain, list)
+            and 1 <= len(chain) <= 3
+            and all(isinstance(m, str) and FREE_ID.fullmatch(m) for m in chain)
+        ):
+            return chain
+        print("Ragas judge: the published judge chain is malformed; using the default.")
+    except Exception as exc:
+        print(f"Ragas judge: the published chain was not used ({type(exc).__name__}); using the default.")
+    return [m.strip() for m in DEFAULT_MODELS.split(",")]
 
 
 class Pacer:
@@ -101,8 +136,19 @@ def build_metrics(model: str, pacer: Pacer, embeddings: Any) -> dict[str, Any]:
     }
 
 
+def cannot_be_called(exc: BaseException | None) -> bool:
+    """True when the error, or one it wraps, is an HTTP 404 or 400 from the provider."""
+    for _ in range(6):
+        if exc is None:
+            return False
+        if getattr(exc, "status_code", None) in (400, 404):
+            return True
+        exc = exc.__cause__ or exc.__context__
+    return False
+
+
 async def score_record(
-    record: dict[str, Any], chains: list[dict[str, Any]]
+    record: dict[str, Any], chains: list[tuple[str, dict[str, Any]]], strikes: dict[str, int]
 ) -> tuple[dict[str, float | None], dict[str, str]]:
     calls = {
         "faithfulness": {
@@ -121,7 +167,9 @@ async def score_record(
     errors: dict[str, str] = {}
     for name, kwargs in calls.items():
         scores[name] = None
-        for metrics in chains:  # the next judge model when one fails
+        for model, metrics in chains:  # the next judge model when one fails
+            if strikes.get(model, 0) >= BENCH_AFTER:
+                continue
             try:
                 result = await metrics[name].ascore(**kwargs)
                 value = getattr(result, "value", result)
@@ -130,6 +178,8 @@ async def score_record(
                 break
             except Exception as exc:
                 errors[name] = f"{type(exc).__name__}: {str(exc)[:200]}"
+                if cannot_be_called(exc):
+                    strikes[model] = strikes.get(model, 0) + 1
     return scores, errors
 
 
@@ -142,8 +192,9 @@ async def main_async(args: argparse.Namespace) -> int:
     ]
     pacer = Pacer(float(os.environ.get("RAGAS_MIN_INTERVAL_S", "3.2")))
     embeddings = build_embeddings()
-    models = [m.strip() for m in os.environ.get("RAGAS_JUDGE_MODELS", DEFAULT_MODELS).split(",") if m.strip()]
-    chains = [build_metrics(model, pacer, embeddings) for model in models]
+    models = judge_models()
+    chains = [(model, build_metrics(model, pacer, embeddings)) for model in models]
+    strikes: dict[str, int] = {}
     rows = []
     for number, record in enumerate(records, start=1):
         row: dict[str, Any] = {
@@ -153,7 +204,7 @@ async def main_async(args: argparse.Namespace) -> int:
             "metric_errors": {},
         }
         if record.get("error") is None and record["expected_behavior"] == "answer" and not record["refused"]:
-            row["scores"], row["metric_errors"] = await score_record(record, chains)
+            row["scores"], row["metric_errors"] = await score_record(record, chains, strikes)
         rows.append(row)
         print(f"[{number}/{len(records)}] {record['id']}: {row['scores'] or '-'}", flush=True)
 
@@ -171,7 +222,11 @@ async def main_async(args: argparse.Namespace) -> int:
     report = {
         "engine": "ragas",
         "scored_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "judge": {"models": models, "requests": pacer.count},
+        "judge": {
+            "models": models,
+            "requests": pacer.count,
+            "benched": [m for m, n in strikes.items() if n >= BENCH_AFTER],
+        },
         "summary": summary,
         "cases": rows,
     }

@@ -242,8 +242,19 @@
       $("metrics-since").textContent = "since " + m.since + " · " + m.cache_entries + " cached answers";
     } catch (e) { /* the next poll tries again */ }
   }
+  async function loadModels() {
+    try {
+      var m = await api("/api/v1/models");
+      var words = "Models (" + m.mode + "): light " + m.chains.light.join(", ") + "; heavy " + m.chains.heavy.join(", ") +
+        ". Chains from: " + m.origin.source + (m.origin.tested ? ", tested " + m.origin.tested.slice(0, 10) : "") + ".";
+      var benched = Object.keys(m.benched || {});
+      if (benched.length) words += " Benched (could not be called): " + benched.join(", ") + ".";
+      $("models-note").textContent = words;
+    } catch (e) { /* the next poll tries again */ }
+  }
   loadMetrics();
-  setInterval(loadMetrics, 15000);
+  loadModels();
+  setInterval(function () { loadMetrics(); loadModels(); }, 15000);
 
   // -------------------------------------------------------------------- ask ---
   var busy = false;

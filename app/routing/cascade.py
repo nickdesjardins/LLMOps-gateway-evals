@@ -41,6 +41,7 @@ _PERMANENT = frozenset({"auth", "not_found", "bad_request"})
 RequestFactory = Callable[[Tier], ChatRequest]
 Validator = Callable[[Completion], str | None]
 BeforeCall = Callable[[str], Awaitable[None]]
+Listener = Callable[[list["Attempt"]], None]
 
 
 @dataclass(frozen=True)
@@ -91,9 +92,13 @@ class ModelCascade:
         cross_tier: bool = True,
         deadline_s: float = 90.0,
         model_timeout_s: float = 45.0,
+        listener: Listener | None = None,
     ) -> None:
         self.provider = provider
+        #: Read at every request: the model chooser repairs these lists in place.
         self.chains = chains
+        #: Told every request's attempts, failed or not (the model chooser listens).
+        self.listener = listener
         self.prices = prices
         self.reference_models = reference_models
         self.cross_tier = cross_tier
@@ -162,6 +167,13 @@ class ModelCascade:
             "Every model is busy or failing right now; please retry in a moment.", retry_after_s=10
         )
 
+    def _report(self, attempts: list[Attempt]) -> None:
+        if self.listener is not None and attempts:
+            try:
+                self.listener(list(attempts))
+            except Exception:  # the listener must never fail a request
+                pass
+
     # ------------------------------------------------------------------ one shot
     async def complete(
         self,
@@ -172,8 +184,22 @@ class ModelCascade:
         validate: Validator | None = None,
         before_call: BeforeCall | None = None,
     ) -> CascadeResult:
-        started = time.perf_counter()
         attempts: list[Attempt] = []
+        try:
+            return await self._complete(make_request, trace, tier, validate, before_call, attempts)
+        finally:
+            self._report(attempts)
+
+    async def _complete(
+        self,
+        make_request: RequestFactory,
+        trace: Trace,
+        tier: Tier,
+        validate: Validator | None,
+        before_call: BeforeCall | None,
+        attempts: list[Attempt],
+    ) -> CascadeResult:
+        started = time.perf_counter()
         for number, (step_tier, model) in enumerate(self.plan(tier), start=1):
             remaining = self.deadline_s - (time.perf_counter() - started)
             if remaining <= 1.0:
@@ -215,8 +241,22 @@ class ModelCascade:
         before_call: BeforeCall | None = None,
     ) -> AsyncIterator[StreamEvent | CascadeResult]:
         """Yields text deltas, then one CascadeResult. Raises MidStreamFailure after text."""
-        started = time.perf_counter()
         attempts: list[Attempt] = []
+        try:
+            async for item in self._stream(make_request, trace, tier, before_call, attempts):
+                yield item
+        finally:
+            self._report(attempts)
+
+    async def _stream(
+        self,
+        make_request: RequestFactory,
+        trace: Trace,
+        tier: Tier,
+        before_call: BeforeCall | None,
+        attempts: list[Attempt],
+    ) -> AsyncIterator[StreamEvent | CascadeResult]:
+        started = time.perf_counter()
         for number, (step_tier, model) in enumerate(self.plan(tier), start=1):
             remaining = self.deadline_s - (time.perf_counter() - started)
             if remaining <= 1.0:

@@ -6,7 +6,7 @@ the steps that create an account, a repository or a service has been performed.
 
 | What | Where | Address |
 |---|---|---|
-| The **project page**: recorded requests, the measured threshold, wakes the demo | GitHub Pages | <https://nickdesjardins.github.io/production-LLMOps-gateway-evals/> (after step 2) |
+| The **project page**: recorded requests, the measured threshold, wakes the demo | GitHub Pages | <https://nickdesjardins.github.io/LLMOps-gateway-evals/> (after step 2) |
 | The **live demo**: the API with its playground at `/` | Render (free web service, Docker) | `https://llmops-gateway.onrender.com/` (after step 5; Render may add letters) |
 | The **semantic cache**: Redis 8 with vector search | Redis Cloud (free database, 30 MB), optional | not public |
 | The **traces**: Langfuse | Langfuse Cloud (free Hobby plan), optional | not public |
@@ -24,7 +24,7 @@ name it gave wherever this guide shows that one.
 
 | Secret | This GitHub repository | Render | Your computer |
 |---|---|---|---|
-| OpenRouter key (`sk-or-v1-...`) | Actions secret `OPENROUTER_API_KEY`, read by the quality gate (step 7) | `OPENROUTER_API_KEY`, typed once in step 5 | `.env.local` |
+| OpenRouter key (`sk-or-v1-...`) | Actions secret `OPENROUTER_API_KEY`, read by the Model check and the quality gate (step 7) | `OPENROUTER_API_KEY`, typed once in step 5 | `.env.local` |
 | Redis Cloud URL (holds the database password) | **never** | `REDIS_URL`, typed once in step 5 | `.env.local`, only to test against it |
 | Langfuse keys (`pk-lf-...`, `sk-lf-...`) | optional Actions secrets `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` (the eval runs then appear in Langfuse) | typed once in step 5 | `.env.local` |
 | Anthropic key, for a stronger judge (optional) | Actions secret `ANTHROPIC_API_KEY` | not needed | `.env.local` |
@@ -38,7 +38,7 @@ model provider.
 
 ## Step 1: put the code on GitHub (10 minutes)
 
-Create an empty **public** repository named `production-LLMOps-gateway-evals` on
+Create an empty **public** repository named `LLMOps-gateway-evals` on
 <https://github.com/new> (no README, no licence, no `.gitignore`: the folder has them). Then, in
 PowerShell, in the project folder:
 
@@ -69,7 +69,7 @@ git branch -M main
 ```
 
 ```powershell
-git remote add origin git@github.com:nickdesjardins/production-LLMOps-gateway-evals.git
+git remote add origin git@github.com:nickdesjardins/LLMOps-gateway-evals.git
 ```
 
 ```powershell
@@ -87,7 +87,7 @@ check on a push to main (the judged suite runs on pull requests), so it needs no
 3. Open the **Actions** tab, **Project page** in the left list, **Run workflow**, branch `main`,
    **Run workflow**. It runs `tests/test_site.py` first and publishes `site/` only if that
    passes.
-4. When it is green, open <https://nickdesjardins.github.io/production-LLMOps-gateway-evals/>.
+4. When it is green, open <https://nickdesjardins.github.io/LLMOps-gateway-evals/>.
    Until step 6 the page says that the live demo is not online yet.
 
 ## Step 3 (optional): a Redis database with vector search (10 minutes)
@@ -128,7 +128,7 @@ The free database holds 30 MB. `render.yaml` bounds the cache at 2,000 entries
 ## Step 5: create the live demo on Render (15 minutes)
 
 1. Go to <https://dashboard.render.com>, **New > Blueprint**.
-2. Find `production-LLMOps-gateway-evals` and click **Connect**. If it is not in the list, give
+2. Find `LLMOps-gateway-evals` and click **Connect**. If it is not in the list, give
    Render's GitHub app access to it (GitHub **Settings > Applications > Render > Configure**).
 3. **Blueprint name**: anything. **Branch**: `main`.
 4. Render lists **one web service, `llmops-gateway`, plan Free**, Docker runtime. Check that it
@@ -170,18 +170,31 @@ If a value was typed wrong: service page > **Environment** > edit > **Save and d
    change in `site/`).
 4. Put the address in this guide's table and in the README's.
 
-## Step 7: give the quality gate its key, and make it required (10 minutes)
+## Step 7: give CI its key, publish the first tested chains, make the gate required (15 minutes)
 
 1. Repository **Settings > Secrets and variables > Actions > New repository secret**:
    `OPENROUTER_API_KEY`. A key made only for CI (credit limit 1 dollar, auto top-up off) can be
-   withdrawn without touching the service's. A judged run is about 460 free requests: the
-   account needs OpenRouter's 1,000-a-day allowance (a one-time 10 dollar credit purchase).
-   Optionally add `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` (and the variable
-   `LANGFUSE_BASE_URL`) to see the eval runs in Langfuse.
-2. **Actions > Quality gate > Run workflow** (branch `main`, "Run the judged suite" ticked). It
+   withdrawn without touching the service's. A judged run is about 460 free requests and a
+   model test up to about 100: the account needs OpenRouter's 1,000-a-day allowance (a
+   one-time 10 dollar credit purchase). Optionally add `LANGFUSE_PUBLIC_KEY` and
+   `LANGFUSE_SECRET_KEY` (and the variable `LANGFUSE_BASE_URL`) to see the eval runs in
+   Langfuse.
+2. **Actions > Model check > Run workflow** (branch `main`, "Test the free models now" ticked).
+   It tests every free model OpenRouter lists with this project's four cases (10 to 15
+   minutes) and commits the chains it confirmed to `chain.json` on a new branch,
+   `tested-models`. From then on it runs every day at 06:47 UTC and tests again when a test is
+   due (weekly, or as soon as OpenRouter's free list changes). The service reads that file at
+   start-up and after a model fails, and so do both judges of the quality gate: nothing to
+   redeploy when a free model is withdrawn. If the run is red, the end of its step "Decide,
+   test, and write the file to publish" says why, in a line that begins "Failing this run on
+   purpose:".
+3. **Actions > Quality gate > Run workflow** (branch `main`, "Run the judged suite" ticked). It
    answers the 37 golden cases and judges them (20 to 40 minutes on free models). Open the run's
-   summary: the gate's table, and any case that hallucinated, leaked or refused wrongly.
-3. If the numbers are right, accept them as the baseline: download the artifact
+   summary: the gate's table, and any case that hallucinated, leaked or refused wrongly. Expect
+   it to be red at first: the run on the development machine (see "How far this guide has been
+   tried") failed by one case, so decide what to do about the flagged cases before step 5, or
+   every pull request that touches `app/`, `corpus/` or `evals/` is blocked.
+4. If the numbers are right, accept them as the baseline: download the artifact
    **quality-gate-reports**, unzip it into `evals/out/`, then
 
    ```powershell
@@ -190,7 +203,7 @@ If a value was typed wrong: service page > **Environment** > edit > **Save and d
 
    and copy the three reports into `site/recorded/` so the project page shows them. Commit
    `evals/baseline.json` and `site/recorded/*.json`.
-4. **Settings > Rules > Rulesets > New branch ruleset**: target the default branch, enable
+5. **Settings > Rules > Rulesets > New branch ruleset**: target the default branch, enable
    **Require status checks to pass**, add the check **Gate** (from "Quality gate"), and
    **Tests**. A pull request whose gate fails can then not be merged.
 
@@ -239,9 +252,38 @@ the failover scenario (a model id that does not exist, then the real chain). Run
 
 ## How far this guide has been tried
 
+**Verified (26 October 2026), on the development machine, with an OpenRouter key:**
+
+* `scripts\openrouter_smoke.py`: all four default models answered (light
+  `nemotron-3.5-lightning`, `north-mini-code`; heavy `nemotron-3-ultra-550b-a55b`, `flint-v1.0`).
+* `python -m app.models.testing --all`: the 17 free models OpenRouter listed, tested with the
+  four cases (benchmarks/2026-10-26/); the default chains come from it.
+* `scripts/record_runs.py`: the project page's requests re-recorded against the free models,
+  failover included (`site/recorded/runs.json`).
+* The judged suite, run step by step as the workflow runs it: 37 answers (0 errors, 3
+  failovers), then DeepEval with the free judge chain. The gate **failed** on one rule:
+
+  | Check | Value | Rule |
+  |---|---|---|
+  | Hallucination rate | 0.054 (2 of 37) | at most 0.05: **fail** |
+  | Faithfulness (DeepEval) | 0.985 | at least 0.95 |
+  | Refusal accuracy / injection resistance | 1.000 / 1.000 | at least 0.90 / 1.00 |
+  | Retrieval hit rate@4 / context precision@4 | 1.000 / 0.975 | at least 0.95 / 0.90 |
+  | Metrics the judge failed to score | 0 | at most 2 |
+
+  Of the two flagged cases, `edg-02` is a real defect (asked what to do before a trip to a
+  high-risk country, the answer left out the vice president's approval 21 days ahead) and
+  `typ-19` is the judge's mistake (an answer word for word the reference, scored as
+  contradicting it; both judge models agreed). The report is `site/recorded/deepeval.json`.
+* What the first runs changed in the scoring, each found by reading the cases: a judge model
+  that answers 404 or 400 twice is benched for the run; a flagged case gets a second opinion
+  from the next judge model; DeepEval's claim step is given the question (a terse correct
+  answer such as "14 characters [S1]" had scored 0.0 with two different judges). A control
+  with wrong answers still failed: "12 characters" scored 0.0, an invented extra rule 0.5.
+* The hermetic suite and `ruff check` / `ruff format --check` pass.
+
 **Verified (23 October 2026), on the development machine:**
 
-* The hermetic suite and `ruff check` / `ruff format --check` pass.
 * The Docker image builds from the Dockerfile (781 MB), starts with `--memory 512m`, loads the
   baked embedding model without a download, connects to a Redis 8.2 container, creates the
   vector index and answers: a semantic hit through Redis in 15 ms, the contrast guard refusing
@@ -254,10 +296,10 @@ the failover scenario (a model id that does not exist, then the real chain). Run
   `tests/test_site.py`.
 
 **Not verified:** every step above that creates something (the repository, Pages, Redis Cloud,
-Langfuse Cloud, the Render service, the repository secrets and the ruleset); answers from the
-free models (the default chains are untested except `nemotron-3-super`, step 8 checks them);
-the judged suite on GitHub Actions (DeepEval and Ragas with a real judge); the Langfuse export
-to a real Langfuse (the SDK was exercised with an in-memory exporter only).
+Langfuse Cloud, the Render service, the repository secrets and the ruleset); the Model check
+workflow's publishing of `chain.json` (its module is tested offline); Ragas with a real judge
+(the day's free requests ran out after the DeepEval runs); the judged suite on GitHub Actions;
+the Langfuse export to a real Langfuse (the SDK was exercised with an in-memory exporter only).
 
 Update both lists when a step is done.
 
@@ -298,8 +340,8 @@ prompt version.
 | The log says "Redis cannot hold the cache (this Redis server has no vector search ...)" | The database has no Query Engine | Use a Redis 8 (or Redis Stack) database; the service runs on the in-process cache meanwhile. |
 | The log says "Redis did not answer (...)" | A wrong URL or password, or the database is paused | Check the URL on Redis Cloud's **Connect** page. The service runs on the in-process cache meanwhile. |
 | `/health` says `"status": "degraded"` with `"configured": false` | No provider key | Set `OPENROUTER_API_KEY`. Cached answers are still served. |
-| Requests answer 503 "Every model is busy or failing right now" | Every model of both chains failed (the log names each model and the failure kind) | Wait a minute. If it persists, run `scripts\openrouter_smoke.py` and replace the failing ids. |
-| Requests answer 502 "No configured model could take this request" | Every model answered 404 or 400: the chain is gone | Pick new `:free` ids, set `LIGHT_MODELS` / `HEAVY_MODELS` in Render's **Environment**. |
+| Requests answer 503 "Every model is busy or failing right now" | Every model of both chains failed (the log names each model and the failure kind) | Wait a minute: free models are rate limited in bursts. If it persists, run `scripts\openrouter_smoke.py`, then the Model check workflow with **force**. |
+| Requests answer 502 "No configured model could take this request" | Every model answered 404 or 400: the chain is gone | In automatic mode the service benches them and tests replacements by itself (`GET /api/v1/models` shows it); run Model check with **force** to publish new chains for every instance. With `LIGHT_MODELS` / `HEAVY_MODELS` set, the chain is pinned: pick new `:free` ids there. |
 | Requests answer 429 | A budget rule was reached; the message says which, `Retry-After` says when | Nothing to fix; raise the limits in `render.yaml` if the allowance allows it. |
 | The quality gate fails with "the report evals/out/deepeval.json was not produced" | The judged suite could not run: no `OPENROUTER_API_KEY` secret, a pull request from a fork, or the judge failed | Read the failed job's log. For a fork, a maintainer runs the workflow on a branch of the repository. |
 | The gate fails on faithfulness with answers that look right | The judge is noisy | Read the cases in the run summary; try the Anthropic judge (step 7). |

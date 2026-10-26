@@ -22,6 +22,7 @@ from app.config import Settings
 from app.embeddings import Embedder, build_embedder
 from app.errors import ConfigurationError, NotConfigured
 from app.gateway import ChatGateway
+from app.models.chooser import ModelChooser
 from app.pricing import PriceBook
 from app.providers import Provider, build_provider
 from app.rag.corpus import Corpus, load_corpus
@@ -72,8 +73,10 @@ class Components:
     budget: DemoBudget
     pipeline: RagPipeline
     chat: ChatGateway
+    chooser: ModelChooser
 
     async def close(self) -> None:
+        await self.chooser.stop()
         self.telemetry.flush()
         for sink in self.telemetry.sinks:
             shutdown = getattr(sink, "shutdown", None)
@@ -180,21 +183,24 @@ async def build_components(
             provider = UnconfiguredProvider(settings.llm_provider, str(exc))
             provider_ready = False
     prices = PriceBook(settings.extra_prices())
+    budget = DemoBudget(settings)
+    chooser = ModelChooser(settings, provider, budget=budget)
+    await chooser.start()
     cascade = ModelCascade(
         provider,
-        {"light": settings.chain("light"), "heavy": settings.chain("heavy")},
+        chooser.chains,  # the same lists: a repair is seen by the next request
         prices=prices,
         reference_models={"light": settings.reference_model_light, "heavy": settings.reference_model_heavy},
         cross_tier=settings.cross_tier_fallback,
         deadline_s=settings.request_deadline_s,
         model_timeout_s=settings.model_timeout_s,
+        listener=chooser.note,
     )
     router = ComplexityRouter(settings.router_heavy_threshold)
     metrics = MetricsRecorder()
     telemetry = Telemetry(
         sinks=build_sinks(settings) if sinks is None else sinks, metrics=metrics, keep=settings.traces_kept
     )
-    budget = DemoBudget(settings)
     pipeline = RagPipeline(
         settings=settings,
         corpus=corpus,
@@ -219,8 +225,8 @@ async def build_components(
         note,
         settings.cache_similarity_threshold,
         settings.llm_provider,
-        ", ".join(settings.chain("light")),
-        ", ".join(settings.chain("heavy")),
+        ", ".join(chooser.chains["light"]),
+        ", ".join(chooser.chains["heavy"]),
     )
     return Components(
         settings=settings,
@@ -240,4 +246,5 @@ async def build_components(
         budget=budget,
         pipeline=pipeline,
         chat=chat,
+        chooser=chooser,
     )

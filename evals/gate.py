@@ -172,6 +172,14 @@ def markdown(
                 lines.append(f"| {c['id']} | {c['category']} | {'; '.join(dict.fromkeys(problems))} |")
         judge = deepeval.get("judge") or {}
         lines += ["", f"Judge: {', '.join(judge.get('models', []))}, {judge.get('calls', 0)} calls."]
+        summary = deepeval.get("summary") or {}
+        if summary.get("second_opinions"):
+            second = deepeval.get("second_judge") or {}
+            lines.append(
+                f"Second opinions: {summary['second_opinions']} flagged cases judged again "
+                f"({second.get('calls', 0)} calls), {summary.get('flags_withdrawn', 0)} flags withdrawn; "
+                f"hallucination rate on first opinions alone: {summary.get('hallucination_rate_first_opinion')}."
+            )
     return "\n".join(lines) + "\n"
 
 

@@ -1,0 +1,201 @@
+# Keeps tested chains of free models published, so that a service which slept for weeks wakes up
+# on models that work, and the quality gate's judge stays on a model that answers. Three small
+# jobs, once a day.
+#
+#   test     Decides whether a test of the free models is due: nothing is published yet, the
+#            last test is six and a half days old, the last test confirmed nothing, or
+#            OpenRouter's list of free models changed. Deciding costs nothing and needs no key.
+#            The test itself is the service's own (app/models/testing.py): the four cases of
+#            app/models/cases.py per model, up to 24 models, about 100 free requests at most.
+#            It needs the repository secret OPENROUTER_API_KEY. Without it this job only says
+#            what is due.
+#
+#   publish  Writes the chains to chain.json on the branch "tested-models". A service in
+#            automatic mode reads that file at start-up and after a model failed
+#            (app/models/chooser.py); so does the quality gate's judge (evals/judge.py). The
+#            branch is not "main" on purpose: Render deploys on every push to main and would
+#            restart the service at every publication.
+#
+#   verdict  Turns the run red when the owner has something to do. The step "Decide, test, and
+#            write the file to publish" then ends with a line that begins "Failing this run on
+#            purpose:": a role has no model that passed, a model of a chain failed its cases (only
+#            a person reorders a chain), OpenRouter refused the key, the day's allowance is too
+#            low, or the published chains are over 14 days old. A red run without such a line
+#            means the job itself broke.
+#
+# Why testing and publishing are two jobs: the job that holds the key and runs downloaded
+# Python packages may only read this repository. The job that may write to it runs nothing but
+# git and a few lines of standard-library Python.
+#
+# GitHub pauses scheduled workflows in a public repository after 60 days without activity; the
+# Actions tab's "Enable workflow" brings it back.
+name: Model check
+
+on:
+  schedule:
+    # Daily at 06:47 UTC. Off the hour on purpose: GitHub delays jobs queued at :00.
+    - cron: "47 6 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Test the free models now, even if no test is due"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    # Everything a test result depends on: a change makes the published file "made by another
+    # version of the test", and a new one is tested at once.
+    paths:
+      - app/config.py
+      - app/rag/prompts.py
+      - app/models/**
+      - app/providers/**
+      - requirements.txt
+      - .github/workflows/model-check.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: model-check
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test the free models, if a test is due
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      file: ${{ steps.test.outputs.file }}
+      status: ${{ steps.test.outputs.status }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - name: Install the service's requirements
+        run: pip install -r requirements.txt
+      - name: Fetch what was published last time
+        # Straight from the branch, not from raw.githubusercontent.com, which may serve a copy up
+        # to five minutes old.
+        run: |
+          mkdir -p previous
+          found=0
+          git ls-remote --exit-code --heads origin tested-models > /dev/null || found=$?
+          if [ "$found" = 2 ]; then
+            echo "Nothing has been published yet."
+          elif [ "$found" != 0 ]; then
+            echo "::error::The branch tested-models could not be asked for (git ls-remote ended with $found)."
+            exit 1
+          else
+            git fetch --quiet --depth=1 origin tested-models
+            git show FETCH_HEAD:chain.json > previous/chain.json || rm -f previous/chain.json
+          fi
+      - name: Decide, test, and write the file to publish
+        id: test
+        env:
+          # Only this step sees the key. Without the secret it is empty, and the command then
+          # says what is due and tests nothing.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          force=""
+          if [ "$FORCE" = "true" ]; then force="--force"; fi
+          status=0
+          python -m app.models.published --previous previous/chain.json --out out/chain.json $force || status=$?
+          # This step stays green either way, so that what it wrote can still be published.
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -f out/chain.json ]; then
+            echo "file=$(base64 --wrap=0 out/chain.json)" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    name: Publish the tested chains
+    needs: test
+    if: needs.test.outputs.file != '' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Write chain.json to the tested-models branch
+        env:
+          FILE: ${{ needs.test.outputs.file }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          printf '%s' "$FILE" | base64 --decode > new-chain.json
+
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git init --quiet branch
+          cd branch
+          if git fetch --quiet --depth=1 "$remote" tested-models; then
+            git checkout --quiet -b tested-models FETCH_HEAD
+          else
+            git checkout --quiet --orphan tested-models
+            printf '%s\n' \
+              "This branch is written by the scheduled job in .github/workflows/model-check.yml." \
+              "chain.json holds the chains of free models its last test confirmed. Do not edit it" \
+              "by hand: the next run replaces it. See the README on main, 'Free models that stay working'." \
+              > README.md
+            git add README.md
+          fi
+
+          # The job that made this file ran downloaded packages. Look at it once more here, with
+          # the runner's own Python: small, free models only, three roles of one to three ids.
+          message=$(python3 - <<'PY'
+          import json, os, re, sys
+          free = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}/[a-z0-9][a-z0-9._-]{0,95}:free")
+          stamp = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
+          new = json.load(open("../new-chain.json", encoding="utf-8"))
+          chains = new.get("chains") if isinstance(new, dict) else None
+          def good(chain):
+              return (
+                  isinstance(chain, list)
+                  and 1 <= len(chain) <= 3
+                  and all(isinstance(m, str) and free.fullmatch(m) for m in chain)
+                  and len(set(chain)) == len(chain)
+              )
+          ok = (
+              isinstance(new, dict)
+              and os.path.getsize("../new-chain.json") <= 64_000
+              and new.get("version") == 1
+              and isinstance(new.get("tested"), str)
+              and stamp.fullmatch(new["tested"])
+              and isinstance(chains, dict)
+              and all(good(chains.get(role)) for role in ("light", "heavy", "judge"))
+          )
+          if not ok:
+              sys.exit("chain.json is not a small file with dated chains of free model ids")
+          short = lambda models: ", ".join(m.split("/")[-1].split(":")[0] for m in models)
+          day = new["tested"][:10]
+          print(f"Tested chains {day}: light {short(chains['light'])}; heavy {short(chains['heavy'])}; judge {short(chains['judge'])}")
+          PY
+          )
+
+          mv ../new-chain.json chain.json
+          git add chain.json
+          if git diff --cached --quiet; then
+            echo "Nothing new to publish."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit --quiet --message "$message"
+          git push --quiet "$remote" tested-models
+          echo "$message. Services read it from https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/tested-models/chain.json" >> "$GITHUB_STEP_SUMMARY"
+
+  verdict:
+    name: Are tested chains published?
+    needs: [test, publish]
+    if: ${{ !cancelled() && needs.test.outputs.status != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: The owner has something to do
+        run: |
+          echo "The job 'Test the free models, if a test is due' did not end well."
+          echo "Open it and read the end of its step 'Decide, test, and write the file to publish'."
+          echo "A line that begins 'Failing this run on purpose:' says what you can do."
+          exit 1

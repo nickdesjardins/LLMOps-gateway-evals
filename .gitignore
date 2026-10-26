@@ -3,6 +3,11 @@
 .env.*
 !.env.example
 
+# The chains a running service chose for itself (app/models/chooser.py): it belongs to one
+# machine; committed, it would be read at every start of every deployment.
+model_cache.json
+model_cache.json.tmp
+
 # Python
 .venv/
 .venv-ragas/

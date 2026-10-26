@@ -39,14 +39,29 @@ Reasoning = Literal["default", "off", "low", "medium", "high"]
 AnthropicEffort = Literal["low", "medium", "high", "xhigh", "max"]
 Tier = Literal["light", "heavy"]
 
-#: Free OpenRouter models per tier, chosen from OpenRouter's list on 23 October 2026. The light
-#: chain holds small models with few active parameters; the heavy chain holds the largest free
-#: models that follow instructions well. Each chain mixes two upstream providers, so one outage
-#: cannot take out a tier. nvidia/nemotron-3-super-120b-a12b was measured in Project 3 (8 of 9
-#: correct, about 13 s with reasoning off); the other three are listed, not yet measured here:
-#: scripts/openrouter_smoke.py checks every model of both chains before a recording.
-DEFAULT_OPENROUTER_LIGHT = "google/gemma-4-26b-a4b-it:free,nvidia/nemotron-3.5-lightning:free"
-DEFAULT_OPENROUTER_HEAVY = "nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free"
+#: Free OpenRouter models per tier: a dated snapshot, measured on 26 October 2026 through this
+#: project's own four cases (app/models/cases.py; every answer saved in benchmarks/2026-10-26/).
+#: Of the 17 free models OpenRouter listed, six passed every case; the Google models were rate
+#: limited on every call that day, and nvidia/nemotron-3-super-120b-a12b and both
+#: thinkingmachines/inkling models answered 404 from this account. Each chain spans two upstream
+#: vendors, so one outage cannot take out a tier:
+#:   light  the two fastest that passed (0.96 s and 1.08 s median answers);
+#:   heavy  the largest model that passed (550B), then another vendor's model;
+#:   judge  not the model that writes most answers, so the judge does not grade its own work.
+#: Automatic mode keeps these working by itself (app/models/chooser.py): this is where it starts.
+DEFAULT_OPENROUTER_LIGHT = "nvidia/nemotron-3.5-lightning:free,cohere/north-mini-code:free"
+DEFAULT_OPENROUTER_HEAVY = "nvidia/nemotron-3-ultra-550b-a55b:free,recursive/flint-v1.0:free"
+#: The eval suite's LLM-as-a-judge, when EVAL_JUDGE_MODELS names none.
+DEFAULT_OPENROUTER_JUDGE = "dots-studio/dots-3-note-preview:free,nvidia/nemotron-3-ultra-550b-a55b:free"
+#: The day these defaults were measured with this project's own cases (benchmarks/).
+DEFAULT_MEASURED_ON = "2026-10-26"
+
+#: Where this project publishes the chains its scheduled test confirmed: one small JSON file on
+#: a branch of its own, written by .github/workflows/model-check.yml. A clone reads the same
+#: file until it is pointed elsewhere. If the repository is renamed, change this at once.
+DEFAULT_PUBLISHED_URL = (
+    "https://raw.githubusercontent.com/nickdesjardins/LLMOps-gateway-evals/tested-models/chain.json"
+)
 
 #: The current Claude models: the cheapest for the light tier, the default frontier model for
 #: the heavy one.
@@ -179,6 +194,20 @@ class Settings(BaseSettings):
     cross_tier_fallback: bool = Field(
         default=True,
         description="When every model of a tier fails, try the other tier before giving up.",
+    )
+    model_published_url: str | None = Field(
+        default=DEFAULT_PUBLISHED_URL,
+        description="The chains the scheduled test published; null switches reading it off.",
+    )
+    model_repair: bool = Field(
+        default=True,
+        description=(
+            "Automatic mode only: bench a model that cannot be called and fill its place with a "
+            "free model that passes this project's cases."
+        ),
+    )
+    model_cache_path: str = Field(
+        default="model_cache.json", description="Where the chains the service chose are kept (git-ignored)."
     )
     model_timeout_s: float = Field(default=45.0, gt=0, le=600)
     request_deadline_s: float = Field(
@@ -340,6 +369,19 @@ class Settings(BaseSettings):
         if self.llm_provider == "offline":
             return [OFFLINE_MODEL]
         return []  # openai and gemini: the operator names the models
+
+    def chain_pinned(self, tier: Tier) -> bool:
+        """True when the operator named the tier's models: the service then never replaces one."""
+        raw = self.light_models if tier == "light" else self.heavy_models
+        return bool(raw.strip())
+
+    def models_automatic(self) -> bool:
+        """The service looks after its free chains: OpenRouter, a key, and a tier not pinned."""
+        return (
+            self.llm_provider == "openrouter"
+            and self.openrouter_api_key is not None
+            and not (self.chain_pinned("light") and self.chain_pinned("heavy"))
+        )
 
     def max_output_tokens(self, tier: Tier) -> int:
         return self.max_output_tokens_light if tier == "light" else self.max_output_tokens_heavy

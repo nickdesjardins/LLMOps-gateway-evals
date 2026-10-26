@@ -22,6 +22,7 @@ services:
         - tests/**
         - scripts/**
         - evals/**
+        - benchmarks/**
     envVars:
       - key: ENVIRONMENT
         value: production # hides /docs

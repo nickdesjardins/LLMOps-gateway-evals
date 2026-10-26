@@ -156,7 +156,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           EVAL_JUDGE_PROVIDER: ${{ vars.EVAL_JUDGE_PROVIDER || 'openrouter' }}
-          EVAL_JUDGE_MODELS: ${{ vars.EVAL_JUDGE_MODELS || 'nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free' }}
+          # Empty: the judge chain the Model check workflow published (evals/judge.py).
+          EVAL_JUDGE_MODELS: ${{ vars.EVAL_JUDGE_MODELS }}
         run: python -m evals.score_deepeval --answers evals/out/answers.jsonl --out evals/out/deepeval.json
       - uses: actions/upload-artifact@v4
         with:
@@ -187,7 +188,8 @@ jobs:
       - name: Judge the answers
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          RAGAS_JUDGE_MODELS: ${{ vars.RAGAS_JUDGE_MODELS || 'nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free' }}
+          # Empty: the published judge chain, as for DeepEval (evals/score_ragas.py).
+          RAGAS_JUDGE_MODELS: ${{ vars.RAGAS_JUDGE_MODELS }}
         run: python evals/score_ragas.py --answers evals/out/answers.jsonl --out evals/out/ragas.json
       - uses: actions/upload-artifact@v4
         with:
