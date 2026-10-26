@@ -1,0 +1,77 @@
+# Render Blueprint: one free web service built from the Dockerfile, serving the API and the
+# playground at "/". Render reads this file when you choose New > Blueprint and pick the
+# repository; docs/DEPLOY.md walks through it. Values typed into a form, once: the OpenRouter
+# key, and (optional) the Redis URL and the two Langfuse keys. Leave an optional box empty and
+# the service runs without it: the cache stays in memory, the traces stay in the service.
+services:
+  - type: web
+    name: llmops-gateway
+    runtime: docker
+    plan: free # without this line Render creates a paid instance
+    region: virginia # same coast as Redis Cloud's us-east-1; cannot be changed later
+    dockerfilePath: ./Dockerfile
+    # Liveness only: /livez touches neither Redis nor a model.
+    healthCheckPath: /livez
+    autoDeployTrigger: commit # every push to main is built and deployed
+    buildFilter:
+      ignoredPaths: # a push that changes only these does not rebuild the service
+        - site/**
+        - docs/**
+        - README.md
+        - .github/**
+        - tests/**
+        - scripts/**
+        - evals/**
+    envVars:
+      - key: ENVIRONMENT
+        value: production # hides /docs
+      - key: DEMO_MODE
+        value: "true" # routes open, every model call counted against the budget below
+      - key: LLM_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_API_KEY
+        sync: false # asked for once, when the Blueprint is created; never stored here
+      - key: REDIS_URL
+        sync: false # optional: the database URL from Redis Cloud; empty keeps the cache in memory
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false # optional: from a Langfuse Cloud project; empty keeps traces local
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_BASE_URL
+        value: https://us.cloud.langfuse.com # the US region; https://cloud.langfuse.com is the EU one
+      - key: CORS_ALLOW_ORIGINS
+        value: https://nickdesjardins.github.io # the project page on GitHub Pages
+      # Visitor addresses, for the per-visitor limits. Render's traffic passes through
+      # Cloudflare, which overwrites CF-Connecting-IP with the real address.
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: CLIENT_IP_HEADER
+        value: CF-Connecting-IP
+      # The public budget. OpenRouter allows 20 free requests a minute; a miss is one call,
+      # two when a model fails over. Cache hits are not counted against the model budget.
+      - key: REQUESTS_PER_MINUTE_PER_CLIENT
+        value: "20"
+      - key: MODEL_CALLS_PER_DAY_PER_CLIENT
+        value: "30"
+      - key: MODEL_CALLS_PER_MINUTE
+        value: "12"
+      - key: MODEL_CALLS_PER_DAY
+        value: "300"
+      - key: MAX_INFLIGHT
+        value: "3"
+      # The semantic cache. 0.96 is the specification's threshold; the measured trade-off is
+      # on the project page. Redis Cloud's free database holds 30 MB: 2,000 entries fit.
+      - key: CACHE_SIMILARITY_THRESHOLD
+        value: "0.96"
+      - key: CACHE_MAX_ENTRIES
+        value: "2000"
+      - key: CACHE_TTL_S
+        value: "604800" # a week: the corpus changes only with a deploy, which empties the namespace
+      - key: EMBEDDING_PROVIDER
+        value: fastembed
+      - key: FASTEMBED_MODEL
+        value: BAAI/bge-small-en-v1.5 # baked into the image by the Dockerfile
+      - key: FASTEMBED_THREADS
+        value: "1" # a free instance gets a fraction of one CPU
+      - key: LOG_LEVEL
+        value: INFO

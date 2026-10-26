@@ -1,0 +1,1417 @@
+{
+ "measured_at": "2026-10-23T18:11:33Z",
+ "embedder": "fastembed:BAAI/bge-small-en-v1.5",
+ "dimensions": 384,
+ "intents": 25,
+ "phrasings": 76,
+ "same_pairs": 78,
+ "near_miss_pairs": 78,
+ "same_similarity": {
+  "min": 0.7397,
+  "median": 0.8891,
+  "max": 0.995
+ },
+ "near_miss_similarity": {
+  "median": 0.8092,
+  "max": 0.9613
+ },
+ "guard_blocks_same": 0,
+ "query_embedding_ms": {
+  "p50": 6.52,
+  "max": 8.04,
+  "machine": "Windows AMD64, 3.12.4"
+ },
+ "default_threshold": 0.96,
+ "sweep": [
+  {
+   "threshold": 0.8,
+   "true_hit_rate": 0.9359,
+   "false_hit_rate": 0.1795,
+   "true_hit_rate_unguarded": 0.9359,
+   "false_hit_rate_unguarded": 0.5513
+  },
+  {
+   "threshold": 0.81,
+   "true_hit_rate": 0.9103,
+   "false_hit_rate": 0.1538,
+   "true_hit_rate_unguarded": 0.9103,
+   "false_hit_rate_unguarded": 0.5
+  },
+  {
+   "threshold": 0.82,
+   "true_hit_rate": 0.8974,
+   "false_hit_rate": 0.1154,
+   "true_hit_rate_unguarded": 0.8974,
+   "false_hit_rate_unguarded": 0.4487
+  },
+  {
+   "threshold": 0.83,
+   "true_hit_rate": 0.8718,
+   "false_hit_rate": 0.0641,
+   "true_hit_rate_unguarded": 0.8718,
+   "false_hit_rate_unguarded": 0.3974
+  },
+  {
+   "threshold": 0.84,
+   "true_hit_rate": 0.859,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.859,
+   "false_hit_rate_unguarded": 0.3718
+  },
+  {
+   "threshold": 0.85,
+   "true_hit_rate": 0.8077,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.8077,
+   "false_hit_rate_unguarded": 0.3718
+  },
+  {
+   "threshold": 0.86,
+   "true_hit_rate": 0.7179,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.7179,
+   "false_hit_rate_unguarded": 0.3462
+  },
+  {
+   "threshold": 0.87,
+   "true_hit_rate": 0.5769,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.5769,
+   "false_hit_rate_unguarded": 0.2949
+  },
+  {
+   "threshold": 0.88,
+   "true_hit_rate": 0.5641,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.5641,
+   "false_hit_rate_unguarded": 0.2949
+  },
+  {
+   "threshold": 0.89,
+   "true_hit_rate": 0.4872,
+   "false_hit_rate": 0.0385,
+   "true_hit_rate_unguarded": 0.4872,
+   "false_hit_rate_unguarded": 0.2692
+  },
+  {
+   "threshold": 0.9,
+   "true_hit_rate": 0.3974,
+   "false_hit_rate": 0.0256,
+   "true_hit_rate_unguarded": 0.3974,
+   "false_hit_rate_unguarded": 0.2051
+  },
+  {
+   "threshold": 0.91,
+   "true_hit_rate": 0.3333,
+   "false_hit_rate": 0.0128,
+   "true_hit_rate_unguarded": 0.3333,
+   "false_hit_rate_unguarded": 0.1923
+  },
+  {
+   "threshold": 0.92,
+   "true_hit_rate": 0.2308,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.2308,
+   "false_hit_rate_unguarded": 0.141
+  },
+  {
+   "threshold": 0.93,
+   "true_hit_rate": 0.2179,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.2179,
+   "false_hit_rate_unguarded": 0.1282
+  },
+  {
+   "threshold": 0.94,
+   "true_hit_rate": 0.1795,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.1795,
+   "false_hit_rate_unguarded": 0.1154
+  },
+  {
+   "threshold": 0.95,
+   "true_hit_rate": 0.141,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.141,
+   "false_hit_rate_unguarded": 0.0897
+  },
+  {
+   "threshold": 0.96,
+   "true_hit_rate": 0.1282,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.1282,
+   "false_hit_rate_unguarded": 0.0128
+  },
+  {
+   "threshold": 0.97,
+   "true_hit_rate": 0.0897,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.0897,
+   "false_hit_rate_unguarded": 0.0
+  },
+  {
+   "threshold": 0.98,
+   "true_hit_rate": 0.0769,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.0769,
+   "false_hit_rate_unguarded": 0.0
+  },
+  {
+   "threshold": 0.99,
+   "true_hit_rate": 0.0256,
+   "false_hit_rate": 0.0,
+   "true_hit_rate_unguarded": 0.0256,
+   "false_hit_rate_unguarded": 0.0
+  }
+ ],
+ "pairs": [
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "how many days of vacation do full-time employees get per year",
+   "similarity": 0.995,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many vacation days do full time employees get per year",
+   "similarity": 0.9912,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many days of vacation do full-time employees get per year",
+   "similarity": 0.9874,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-international",
+   "a": "what is the daily meal limit for international travel",
+   "b": "what is the daily meal limit when travelling internationally",
+   "similarity": 0.986,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-domestic",
+   "a": "what is the daily meal limit for domestic travel",
+   "b": "what is the daily meal limit when travelling domestically",
+   "similarity": 0.9849,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-under-2500",
+   "a": "who approves an expense report under 2,500 dollars",
+   "b": "who must approve an expense report below 2,500 dollars",
+   "similarity": 0.9802,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-over-10k",
+   "a": "who approves an expense report above 10,000 dollars",
+   "b": "who must approve an expense report over 10,000 dollars",
+   "similarity": 0.9762,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "p1-response",
+   "a": "how fast must a p1 ticket get a first response",
+   "b": "what is the first response time for a p1 ticket",
+   "similarity": 0.9638,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "expense-deadline",
+   "a": "how long do i have to submit an expense report",
+   "b": "within how many days must an expense report be submitted",
+   "similarity": 0.9614,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit when travelling domestically",
+   "b": "what is the daily meal limit when travelling internationally",
+   "similarity": 0.9613,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "p2-response",
+   "a": "how fast must a p2 ticket get a first response",
+   "b": "what is the first response time for a p2 ticket",
+   "similarity": 0.9612,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how fast must a p1 ticket get a first response",
+   "b": "how fast must a p2 ticket get a first response",
+   "similarity": 0.9599,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit for domestic travel",
+   "b": "what is the daily meal limit for international travel",
+   "similarity": 0.9597,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval is needed for travel outside the country",
+   "b": "what approval is needed for travel inside the country",
+   "similarity": 0.9576,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit when travelling domestically",
+   "b": "what is the daily meal limit for international travel",
+   "similarity": 0.956,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "what is the first response time for a p1 ticket",
+   "b": "what is the first response time for a p2 ticket",
+   "similarity": 0.9534,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "same",
+   "label": "sick-days",
+   "a": "how many paid sick days do employees get each year",
+   "b": "how many paid sick days do we get per year",
+   "similarity": 0.9528,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit for domestic travel",
+   "b": "what is the daily meal limit when travelling internationally",
+   "similarity": 0.9525,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "vacation-carryover",
+   "a": "how many vacation days can i carry over to next year",
+   "b": "how many unused vacation days can be carried over into the next year",
+   "similarity": 0.9492,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "parental-leave",
+   "a": "how long is the parental leave top-up",
+   "b": "for how many weeks does the company top up parental leave",
+   "similarity": 0.9452,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "who has to approve international business travel",
+   "b": "who has to approve domestic business travel",
+   "similarity": 0.9435,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "payment-terms",
+   "a": "what are the standard payment terms for suppliers",
+   "b": "what payment terms do we give suppliers",
+   "similarity": 0.941,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how quickly does the service desk respond to a p1",
+   "b": "how quickly does the service desk respond to a p2",
+   "similarity": 0.9402,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "same",
+   "label": "email-retention",
+   "a": "how long do we keep emails",
+   "b": "for how many years is email kept",
+   "similarity": 0.9381,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "how much can i spend on meals per day on a domestic trip",
+   "b": "how much can i spend on meals per day on an international trip",
+   "similarity": 0.9372,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "phishing-report",
+   "a": "how do i report a phishing email",
+   "b": "how do i report a suspected phishing message",
+   "similarity": 0.9364,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "sick-days",
+   "a": "how many paid sick days do we get per year",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.9319,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "invoice-retention",
+   "a": "how long do we keep invoices",
+   "b": "for how many years are invoices kept",
+   "similarity": 0.9277,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how fast must a p1 ticket get a first response",
+   "b": "what is the first response time for a p2 ticket",
+   "similarity": 0.925,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "same",
+   "label": "vacation-carryover",
+   "a": "how many unused vacation days can be carried over into the next year",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.919,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the hotel limit per night in a tier 1 city like toronto",
+   "b": "what is the hotel limit per night outside the tier 1 cities",
+   "similarity": 0.9179,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "expense-deadline",
+   "a": "how long do i have to submit an expense report",
+   "b": "what is the deadline for submitting expense reports",
+   "similarity": 0.9176,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "flight-class",
+   "a": "when can i fly premium economy",
+   "b": "for which flights may i book premium economy",
+   "similarity": 0.9163,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "supplier-bank-change",
+   "a": "what do we do when a supplier asks to change its bank details",
+   "b": "how is a change of supplier bank account handled",
+   "similarity": 0.9149,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "what is the first response time for a p1 ticket",
+   "b": "how fast must a p2 ticket get a first response",
+   "similarity": 0.9143,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "same",
+   "label": "expense-deadline",
+   "a": "what is the deadline for submitting expense reports",
+   "b": "within how many days must an expense report be submitted",
+   "similarity": 0.9138,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-international",
+   "a": "what is the daily meal limit for international travel",
+   "b": "how much can i spend on meals per day on an international trip",
+   "similarity": 0.9136,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval do i need before an international trip",
+   "b": "what approval do i need before a domestic trip",
+   "similarity": 0.9135,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "sick-days",
+   "a": "how many paid sick days do employees get each year",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.9127,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who must approve an expense report over 10,000 dollars",
+   "b": "who must approve an expense report below 2,500 dollars",
+   "similarity": 0.912,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "same",
+   "label": "vacation-carryover",
+   "a": "how many vacation days can i carry over to next year",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.9105,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the nightly hotel cap in toronto",
+   "b": "what is the nightly hotel cap in ottawa",
+   "similarity": 0.9089,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "receipt-threshold",
+   "a": "when do i need an itemized receipt",
+   "b": "above what amount is an itemized receipt required",
+   "similarity": 0.9048,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "invoice-retention",
+   "a": "how long do we keep invoices",
+   "b": "what is the retention period for invoices",
+   "similarity": 0.9041,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-domestic",
+   "a": "what is the daily meal limit for domestic travel",
+   "b": "how much can i spend on meals per day on a domestic trip",
+   "similarity": 0.903,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-international",
+   "a": "what is the daily meal limit when travelling internationally",
+   "b": "how much can i spend on meals per day on an international trip",
+   "similarity": 0.9021,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "intl-approval",
+   "a": "what approval do i need before an international trip",
+   "b": "what approval is needed for travel outside the country",
+   "similarity": 0.9008,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who signs off on expense reports larger than 10,000 dollars",
+   "b": "who signs off on expense reports smaller than 2,500 dollars",
+   "similarity": 0.8992,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval do i need before an international trip",
+   "b": "what approval is needed for travel inside the country",
+   "similarity": 0.8973,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "what is the yearly vacation allowance for full-time staff",
+   "similarity": 0.8964,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who approves an expense report above 10,000 dollars",
+   "b": "who approves an expense report under 2,500 dollars",
+   "similarity": 0.8963,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "same",
+   "label": "supplier-bank-change",
+   "a": "what do we do when a supplier asks to change its bank details",
+   "b": "a supplier sent new banking details; what is the procedure",
+   "similarity": 0.8962,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "how much can i spend per night on a hotel in toronto",
+   "b": "how much can i spend per night on a hotel in ottawa",
+   "similarity": 0.8957,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-tier1",
+   "a": "how much can i spend per night on a hotel in toronto",
+   "b": "what is the hotel limit per night in a tier 1 city like toronto",
+   "similarity": 0.8955,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who approves an expense report above 10,000 dollars",
+   "b": "who must approve an expense report below 2,500 dollars",
+   "similarity": 0.895,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "what is the yearly vacation allowance for full-time staff",
+   "similarity": 0.8945,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "mileage-rate",
+   "a": "how much is reimbursed per kilometre when i drive my personal vehicle",
+   "b": "what is the per kilometre rate for a personal car on business",
+   "similarity": 0.8926,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "email-retention",
+   "a": "how long do we keep emails",
+   "b": "what is the retention period for email",
+   "similarity": 0.8912,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "domestic-approval",
+   "a": "what approval do i need before a domestic trip",
+   "b": "what approval is needed for travel inside the country",
+   "similarity": 0.8909,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "vacation-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "what is the yearly vacation allowance for full-time staff",
+   "similarity": 0.8899,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "meal-domestic",
+   "a": "what is the daily meal limit when travelling domestically",
+   "b": "how much can i spend on meals per day on a domestic trip",
+   "similarity": 0.8884,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "password-length",
+   "a": "how long must my password be",
+   "b": "what is the minimum password length",
+   "similarity": 0.8866,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "usb-storage",
+   "a": "are usb storage devices allowed on company computers",
+   "b": "is it allowed to plug a usb drive into my company laptop",
+   "similarity": 0.886,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "parental-leave",
+   "a": "for how many weeks does the company top up parental leave",
+   "b": "what parental leave top-up does the company offer",
+   "similarity": 0.8857,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "parental-leave",
+   "a": "how long is the parental leave top-up",
+   "b": "what parental leave top-up does the company offer",
+   "similarity": 0.885,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who must approve an expense report over 10,000 dollars",
+   "b": "who approves an expense report under 2,500 dollars",
+   "similarity": 0.8819,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval is needed for travel outside the country",
+   "b": "what approval do i need before a domestic trip",
+   "similarity": 0.8816,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "flight-class",
+   "a": "when can i fly premium economy",
+   "b": "is premium economy allowed on long flights",
+   "similarity": 0.8701,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-under-2500",
+   "a": "who approves an expense report under 2,500 dollars",
+   "b": "who signs off on expense reports smaller than 2,500 dollars",
+   "similarity": 0.8697,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "email-retention",
+   "a": "what is the retention period for email",
+   "b": "for how many years is email kept",
+   "similarity": 0.8693,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-under-2500",
+   "a": "who must approve an expense report below 2,500 dollars",
+   "b": "who signs off on expense reports smaller than 2,500 dollars",
+   "similarity": 0.8682,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "intl-approval",
+   "a": "what approval do i need before an international trip",
+   "b": "who has to approve international business travel",
+   "similarity": 0.8682,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "flight-class",
+   "a": "is premium economy allowed on long flights",
+   "b": "for which flights may i book premium economy",
+   "similarity": 0.8658,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "invoice-retention",
+   "a": "what is the retention period for invoices",
+   "b": "for how many years are invoices kept",
+   "similarity": 0.8655,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-over-10k",
+   "a": "who approves an expense report above 10,000 dollars",
+   "b": "who signs off on expense reports larger than 10,000 dollars",
+   "similarity": 0.8634,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit when travelling domestically",
+   "b": "how much can i spend on meals per day on an international trip",
+   "similarity": 0.8627,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "what is the daily meal limit for domestic travel",
+   "b": "how much can i spend on meals per day on an international trip",
+   "similarity": 0.8616,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "how much can i spend on meals per day on a domestic trip",
+   "b": "what is the daily meal limit for international travel",
+   "similarity": 0.8613,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "who has to approve international business travel",
+   "b": "what approval is needed for travel inside the country",
+   "similarity": 0.8611,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "supplier-bank-change",
+   "a": "a supplier sent new banking details; what is the procedure",
+   "b": "how is a change of supplier bank account handled",
+   "similarity": 0.8608,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "p1-response",
+   "a": "how fast must a p1 ticket get a first response",
+   "b": "how quickly does the service desk respond to a p1",
+   "similarity": 0.8607,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "domestic-approval",
+   "a": "who has to approve domestic business travel",
+   "b": "what approval is needed for travel inside the country",
+   "similarity": 0.8603,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "domestic-approval",
+   "a": "what approval do i need before a domestic trip",
+   "b": "who has to approve domestic business travel",
+   "similarity": 0.86,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "intl-approval",
+   "a": "who has to approve international business travel",
+   "b": "what approval is needed for travel outside the country",
+   "similarity": 0.8588,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "password-length",
+   "a": "what is the minimum password length",
+   "b": "how many characters does a password need",
+   "similarity": 0.8554,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "p2-response",
+   "a": "how fast must a p2 ticket get a first response",
+   "b": "how quickly does the service desk respond to a p2",
+   "similarity": 0.8544,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-tier1",
+   "a": "what is the nightly hotel cap in toronto",
+   "b": "what is the hotel limit per night in a tier 1 city like toronto",
+   "similarity": 0.8543,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "meal-domestic / meal-international",
+   "a": "how much can i spend on meals per day on a domestic trip",
+   "b": "what is the daily meal limit when travelling internationally",
+   "similarity": 0.8526,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "receipt-threshold",
+   "a": "when do i need an itemized receipt",
+   "b": "do i need a receipt for every expense",
+   "similarity": 0.8525,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "approval-over-10k",
+   "a": "who must approve an expense report over 10,000 dollars",
+   "b": "who signs off on expense reports larger than 10,000 dollars",
+   "similarity": 0.8509,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-other",
+   "a": "what is the nightly hotel cap in ottawa",
+   "b": "how much can i spend per night on a hotel in ottawa",
+   "similarity": 0.8504,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval is needed for travel outside the country",
+   "b": "who has to approve domestic business travel",
+   "similarity": 0.8503,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "same",
+   "label": "mileage-rate",
+   "a": "what is the mileage rate for using my own car",
+   "b": "what is the per kilometre rate for a personal car on business",
+   "similarity": 0.8438,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "p1-response",
+   "a": "what is the first response time for a p1 ticket",
+   "b": "how quickly does the service desk respond to a p1",
+   "similarity": 0.841,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-tier1",
+   "a": "what is the nightly hotel cap in toronto",
+   "b": "how much can i spend per night on a hotel in toronto",
+   "similarity": 0.8406,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "phishing-report",
+   "a": "how do i report a phishing email",
+   "b": "what should i do with a suspicious email",
+   "similarity": 0.8406,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "password-length",
+   "a": "how long must my password be",
+   "b": "how many characters does a password need",
+   "similarity": 0.8378,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many unused vacation days can be carried over into the next year",
+   "similarity": 0.8345,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many paid sick days do employees get each year",
+   "similarity": 0.8332,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "p2-response",
+   "a": "what is the first response time for a p2 ticket",
+   "b": "how quickly does the service desk respond to a p2",
+   "similarity": 0.8295,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "how many paid sick days do employees get each year",
+   "similarity": 0.8288,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "what is the retention period for invoices",
+   "b": "what is the retention period for email",
+   "similarity": 0.8285,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "how many paid sick days do employees get each year",
+   "similarity": 0.8259,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "how many unused vacation days can be carried over into the next year",
+   "similarity": 0.8239,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "payment-terms",
+   "a": "what payment terms do we give suppliers",
+   "b": "how many days do we take to pay a supplier invoice",
+   "similarity": 0.8237,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "how many unused vacation days can be carried over into the next year",
+   "similarity": 0.8194,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how quickly does the service desk respond to a p1",
+   "b": "how fast must a p2 ticket get a first response",
+   "similarity": 0.8189,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many vacation days can i carry over to next year",
+   "similarity": 0.8144,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the hotel limit per night in a tier 1 city like toronto",
+   "b": "how much can i spend per night on a hotel in ottawa",
+   "similarity": 0.8121,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "phishing-report",
+   "a": "what should i do with a suspicious email",
+   "b": "how do i report a suspected phishing message",
+   "similarity": 0.811,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "payment-terms",
+   "a": "what are the standard payment terms for suppliers",
+   "b": "how many days do we take to pay a supplier invoice",
+   "similarity": 0.808,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "how many vacation days can i carry over to next year",
+   "similarity": 0.8063,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "how many vacation days can i carry over to next year",
+   "similarity": 0.8056,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "who has to approve international business travel",
+   "b": "what approval do i need before a domestic trip",
+   "similarity": 0.803,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how fast must a p1 ticket get a first response",
+   "b": "how quickly does the service desk respond to a p2",
+   "similarity": 0.8027,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "same",
+   "label": "mileage-rate",
+   "a": "what is the mileage rate for using my own car",
+   "b": "how much is reimbursed per kilometre when i drive my personal vehicle",
+   "similarity": 0.8017,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "usb-storage",
+   "a": "can i use a usb stick on my work laptop",
+   "b": "is it allowed to plug a usb drive into my company laptop",
+   "similarity": 0.7993,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "how quickly does the service desk respond to a p1",
+   "b": "what is the first response time for a p2 ticket",
+   "similarity": 0.7983,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "how long do we keep invoices",
+   "b": "how long do we keep emails",
+   "similarity": 0.7979,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "intl-approval / domestic-approval",
+   "a": "what approval do i need before an international trip",
+   "b": "who has to approve domestic business travel",
+   "similarity": 0.7974,
+   "guard": "opposite terms (domestic/international)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who approves an expense report above 10,000 dollars",
+   "b": "who signs off on expense reports smaller than 2,500 dollars",
+   "similarity": 0.797,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "how many paid sick days do we get per year",
+   "similarity": 0.7948,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "how many paid sick days do we get per year",
+   "similarity": 0.7944,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "how much can i spend per night on a hotel in toronto",
+   "b": "what is the hotel limit per night outside the tier 1 cities",
+   "similarity": 0.7935,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "receipt-threshold",
+   "a": "above what amount is an itemized receipt required",
+   "b": "do i need a receipt for every expense",
+   "similarity": 0.7932,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "how many unused vacation days can be carried over into the next year",
+   "similarity": 0.7913,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who must approve an expense report over 10,000 dollars",
+   "b": "who signs off on expense reports smaller than 2,500 dollars",
+   "similarity": 0.7879,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "how many paid sick days do we get per year",
+   "similarity": 0.7874,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-other",
+   "a": "how much can i spend per night on a hotel in ottawa",
+   "b": "what is the hotel limit per night outside the tier 1 cities",
+   "similarity": 0.7859,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "for how many years are invoices kept",
+   "b": "for how many years is email kept",
+   "similarity": 0.7794,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "usb-storage",
+   "a": "can i use a usb stick on my work laptop",
+   "b": "are usb storage devices allowed on company computers",
+   "similarity": 0.7774,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "p1-response / p2-response",
+   "a": "what is the first response time for a p1 ticket",
+   "b": "how quickly does the service desk respond to a p2",
+   "similarity": 0.7717,
+   "guard": "codes differ (p1 against p2)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "how many vacation days can i carry over to next year",
+   "similarity": 0.7707,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who signs off on expense reports larger than 10,000 dollars",
+   "b": "who must approve an expense report below 2,500 dollars",
+   "similarity": 0.7696,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.7661,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the hotel limit per night in a tier 1 city like toronto",
+   "b": "what is the nightly hotel cap in ottawa",
+   "similarity": 0.7654,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.7649,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "approval-over-10k / approval-under-2500",
+   "a": "who signs off on expense reports larger than 10,000 dollars",
+   "b": "who approves an expense report under 2,500 dollars",
+   "similarity": 0.7631,
+   "guard": "numbers differ (10000 against 2500)"
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the nightly hotel cap in toronto",
+   "b": "how much can i spend per night on a hotel in ottawa",
+   "similarity": 0.763,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.7627,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "what is the nightly hotel cap in toronto",
+   "b": "what is the hotel limit per night outside the tier 1 cities",
+   "similarity": 0.7542,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "how long do we keep invoices",
+   "b": "for how many years is email kept",
+   "similarity": 0.7539,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full-time employees get each year",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.7502,
+   "guard": null
+  },
+  {
+   "kind": "same",
+   "label": "hotel-cap-other",
+   "a": "what is the nightly hotel cap in ottawa",
+   "b": "what is the hotel limit per night outside the tier 1 cities",
+   "similarity": 0.7397,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many vacation days do full time employees get per year",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.739,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "hotel-cap-tier1 / hotel-cap-other",
+   "a": "how much can i spend per night on a hotel in toronto",
+   "b": "what is the nightly hotel cap in ottawa",
+   "similarity": 0.7385,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "how many paid sick days do employees get each year",
+   "similarity": 0.7352,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "how many days of vacation do full-time employees get per year",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.7332,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "how many paid sick days do we get per year",
+   "similarity": 0.7301,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / sick-days",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "what is the number of paid sick days per calendar year",
+   "similarity": 0.7279,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "what is the retention period for invoices",
+   "b": "how long do we keep emails",
+   "similarity": 0.7268,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "how long do we keep invoices",
+   "b": "what is the retention period for email",
+   "similarity": 0.7242,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "vacation-days / vacation-carryover",
+   "a": "what is the yearly vacation allowance for full-time staff",
+   "b": "can i carry over my unused vacation days, and how many",
+   "similarity": 0.7161,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "for how many years are invoices kept",
+   "b": "how long do we keep emails",
+   "similarity": 0.7138,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "what is the retention period for invoices",
+   "b": "for how many years is email kept",
+   "similarity": 0.7093,
+   "guard": null
+  },
+  {
+   "kind": "near_miss",
+   "label": "invoice-retention / email-retention",
+   "a": "for how many years are invoices kept",
+   "b": "what is the retention period for email",
+   "similarity": 0.6618,
+   "guard": null
+  }
+ ]
+}

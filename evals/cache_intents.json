@@ -1,0 +1,141 @@
+{
+  "about": "Help-desk questions grouped by intent: every phrasing of one intent has the same answer. near_misses pairs intents whose questions look alike but whose answers differ; serving one for the other is a false hit. Used by scripts/measure_cache.py (the threshold trade-off) and evals/replay.py (the cache replay). Written for this project; the answers are in corpus/.",
+  "intents": [
+    {"id": "vacation-days", "phrasings": [
+      "How many vacation days do full-time employees get each year?",
+      "How many vacation days do full time employees get per year?",
+      "how many days of vacation do full-time employees get per year",
+      "What is the yearly vacation allowance for full-time staff?"
+    ]},
+    {"id": "vacation-carryover", "phrasings": [
+      "How many vacation days can I carry over to next year?",
+      "How many unused vacation days can be carried over into the next year?",
+      "Can I carry over my unused vacation days, and how many?"
+    ]},
+    {"id": "sick-days", "phrasings": [
+      "How many paid sick days do employees get each year?",
+      "How many paid sick days do we get per year?",
+      "What is the number of paid sick days per calendar year?"
+    ]},
+    {"id": "parental-leave", "phrasings": [
+      "How long is the parental leave top-up?",
+      "For how many weeks does the company top up parental leave?",
+      "What parental leave top-up does the company offer?"
+    ]},
+    {"id": "meal-domestic", "phrasings": [
+      "What is the daily meal limit for domestic travel?",
+      "What is the daily meal limit when travelling domestically?",
+      "How much can I spend on meals per day on a domestic trip?"
+    ]},
+    {"id": "meal-international", "phrasings": [
+      "What is the daily meal limit for international travel?",
+      "What is the daily meal limit when travelling internationally?",
+      "How much can I spend on meals per day on an international trip?"
+    ]},
+    {"id": "receipt-threshold", "phrasings": [
+      "When do I need an itemized receipt?",
+      "Above what amount is an itemized receipt required?",
+      "Do I need a receipt for every expense?"
+    ]},
+    {"id": "expense-deadline", "phrasings": [
+      "How long do I have to submit an expense report?",
+      "What is the deadline for submitting expense reports?",
+      "Within how many days must an expense report be submitted?"
+    ]},
+    {"id": "approval-over-10k", "phrasings": [
+      "Who approves an expense report above 10,000 dollars?",
+      "Who must approve an expense report over 10,000 dollars?",
+      "Who signs off on expense reports larger than 10,000 dollars?"
+    ]},
+    {"id": "approval-under-2500", "phrasings": [
+      "Who approves an expense report under 2,500 dollars?",
+      "Who must approve an expense report below 2,500 dollars?",
+      "Who signs off on expense reports smaller than 2,500 dollars?"
+    ]},
+    {"id": "mileage-rate", "phrasings": [
+      "What is the mileage rate for using my own car?",
+      "How much is reimbursed per kilometre when I drive my personal vehicle?",
+      "What is the per kilometre rate for a personal car on business?"
+    ]},
+    {"id": "hotel-cap-tier1", "phrasings": [
+      "What is the nightly hotel cap in Toronto?",
+      "How much can I spend per night on a hotel in Toronto?",
+      "What is the hotel limit per night in a tier 1 city like Toronto?"
+    ]},
+    {"id": "hotel-cap-other", "phrasings": [
+      "What is the nightly hotel cap in Ottawa?",
+      "How much can I spend per night on a hotel in Ottawa?",
+      "What is the hotel limit per night outside the tier 1 cities?"
+    ]},
+    {"id": "flight-class", "phrasings": [
+      "When can I fly premium economy?",
+      "Is premium economy allowed on long flights?",
+      "For which flights may I book premium economy?"
+    ]},
+    {"id": "intl-approval", "phrasings": [
+      "What approval do I need before an international trip?",
+      "Who has to approve international business travel?",
+      "What approval is needed for travel outside the country?"
+    ]},
+    {"id": "domestic-approval", "phrasings": [
+      "What approval do I need before a domestic trip?",
+      "Who has to approve domestic business travel?",
+      "What approval is needed for travel inside the country?"
+    ]},
+    {"id": "phishing-report", "phrasings": [
+      "How do I report a phishing email?",
+      "What should I do with a suspicious email?",
+      "How do I report a suspected phishing message?"
+    ]},
+    {"id": "password-length", "phrasings": [
+      "How long must my password be?",
+      "What is the minimum password length?",
+      "How many characters does a password need?"
+    ]},
+    {"id": "usb-storage", "phrasings": [
+      "Can I use a USB stick on my work laptop?",
+      "Are USB storage devices allowed on company computers?",
+      "Is it allowed to plug a USB drive into my company laptop?"
+    ]},
+    {"id": "p1-response", "phrasings": [
+      "How fast must a P1 ticket get a first response?",
+      "What is the first response time for a P1 ticket?",
+      "How quickly does the service desk respond to a P1?"
+    ]},
+    {"id": "p2-response", "phrasings": [
+      "How fast must a P2 ticket get a first response?",
+      "What is the first response time for a P2 ticket?",
+      "How quickly does the service desk respond to a P2?"
+    ]},
+    {"id": "invoice-retention", "phrasings": [
+      "How long do we keep invoices?",
+      "What is the retention period for invoices?",
+      "For how many years are invoices kept?"
+    ]},
+    {"id": "email-retention", "phrasings": [
+      "How long do we keep emails?",
+      "What is the retention period for email?",
+      "For how many years is email kept?"
+    ]},
+    {"id": "supplier-bank-change", "phrasings": [
+      "What do we do when a supplier asks to change its bank details?",
+      "A supplier sent new banking details; what is the procedure?",
+      "How is a change of supplier bank account handled?"
+    ]},
+    {"id": "payment-terms", "phrasings": [
+      "What are the standard payment terms for suppliers?",
+      "What payment terms do we give suppliers?",
+      "How many days do we take to pay a supplier invoice?"
+    ]}
+  ],
+  "near_misses": [
+    ["meal-domestic", "meal-international"],
+    ["approval-over-10k", "approval-under-2500"],
+    ["hotel-cap-tier1", "hotel-cap-other"],
+    ["intl-approval", "domestic-approval"],
+    ["p1-response", "p2-response"],
+    ["invoice-retention", "email-retention"],
+    ["vacation-days", "vacation-carryover"],
+    ["vacation-days", "sick-days"]
+  ]
+}

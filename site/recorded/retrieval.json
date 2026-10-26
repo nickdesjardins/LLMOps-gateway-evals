@@ -1,0 +1,527 @@
+{
+ "engine": "retrieval",
+ "measured_at": "2026-10-23T18:32:53Z",
+ "embedder": "fastembed:BAAI/bge-small-en-v1.5",
+ "corpus_version": "d2529c60040d3e2c",
+ "summary": {
+  "k": 4,
+  "cases": 30,
+  "hit_rate": 1.0,
+  "recall": 0.9833,
+  "mrr": 0.9833,
+  "context_precision": 0.975
+ },
+ "cases": [
+  {
+   "id": "typ-01",
+   "category": "typical",
+   "expected": [
+    "leave-policy#vacation"
+   ],
+   "retrieved": [
+    "leave-policy#vacation",
+    "leave-policy#sick-days",
+    "leave-policy#carryover",
+    "leave-policy#bereavement-leave"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-02",
+   "category": "typical",
+   "expected": [
+    "expense-policy#meals-and-entertainment"
+   ],
+   "retrieved": [
+    "expense-policy#meals-and-entertainment",
+    "travel-policy#international-travel",
+    "travel-policy#per-diem-and-incidentals",
+    "travel-policy#air-travel-class"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-03",
+   "category": "typical",
+   "expected": [
+    "expense-policy#approval-thresholds"
+   ],
+   "retrieved": [
+    "expense-policy#approval-thresholds",
+    "expense-policy#scope-and-submission",
+    "expense-policy#receipts",
+    "travel-policy#per-diem-and-incidentals"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-04",
+   "category": "typical",
+   "expected": [
+    "expense-policy#scope-and-submission"
+   ],
+   "retrieved": [
+    "expense-policy#scope-and-submission",
+    "expense-policy#approval-thresholds",
+    "expense-policy#reimbursement-timing",
+    "records-retention#legal-hold"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-05",
+   "category": "typical",
+   "expected": [
+    "expense-policy#receipts"
+   ],
+   "retrieved": [
+    "expense-policy#receipts",
+    "expense-policy#mileage-and-ground-transport",
+    "expense-policy#non-reimbursable-items",
+    "expense-policy#meals-and-entertainment"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-06",
+   "category": "typical",
+   "expected": [
+    "expense-policy#mileage-and-ground-transport"
+   ],
+   "retrieved": [
+    "expense-policy#mileage-and-ground-transport",
+    "travel-policy#booking",
+    "travel-policy#air-travel-class",
+    "travel-policy#hotels"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-07",
+   "category": "typical",
+   "expected": [
+    "travel-policy#booking"
+   ],
+   "retrieved": [
+    "travel-policy#booking",
+    "travel-policy#air-travel-class",
+    "travel-policy#international-travel",
+    "travel-policy#domestic-travel-approval"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-08",
+   "category": "typical",
+   "expected": [
+    "travel-policy#air-travel-class"
+   ],
+   "retrieved": [
+    "travel-policy#air-travel-class",
+    "travel-policy#hotels",
+    "expense-policy#meals-and-entertainment",
+    "expense-policy#mileage-and-ground-transport"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-09",
+   "category": "typical",
+   "expected": [
+    "travel-policy#hotels"
+   ],
+   "retrieved": [
+    "travel-policy#hotels",
+    "travel-policy#per-diem-and-incidentals",
+    "expense-policy#meals-and-entertainment",
+    "expense-policy#non-reimbursable-items"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-10",
+   "category": "typical",
+   "expected": [
+    "information-security#reporting-phishing"
+   ],
+   "retrieved": [
+    "information-security#reporting-phishing",
+    "information-security#example-of-a-phishing-message",
+    "information-security#security-incidents",
+    "records-retention#email"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-11",
+   "category": "typical",
+   "expected": [
+    "information-security#passwords-and-multi-factor-authentication"
+   ],
+   "retrieved": [
+    "information-security#passwords-and-multi-factor-authentication",
+    "it-support#password-resets",
+    "information-security#devices-and-removable-media",
+    "it-support#ticket-priorities"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-12",
+   "category": "typical",
+   "expected": [
+    "information-security#devices-and-removable-media"
+   ],
+   "retrieved": [
+    "information-security#devices-and-removable-media",
+    "it-support#approved-hardware",
+    "information-security#security-incidents",
+    "travel-policy#international-travel"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-13",
+   "category": "typical",
+   "expected": [
+    "records-retention#financial-records"
+   ],
+   "retrieved": [
+    "records-retention#financial-records",
+    "records-retention#employee-records",
+    "records-retention#batch-and-quality-records",
+    "records-retention#email"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-14",
+   "category": "typical",
+   "expected": [
+    "leave-policy#carryover"
+   ],
+   "retrieved": [
+    "leave-policy#carryover",
+    "leave-policy#vacation",
+    "travel-policy#changes-and-cancellations",
+    "leave-policy#sick-days"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-15",
+   "category": "typical",
+   "expected": [
+    "leave-policy#sick-days"
+   ],
+   "retrieved": [
+    "leave-policy#sick-days",
+    "leave-policy#vacation",
+    "leave-policy#bereavement-leave",
+    "leave-policy#parental-leave"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-16",
+   "category": "typical",
+   "expected": [
+    "it-support#ticket-priorities"
+   ],
+   "retrieved": [
+    "it-support#ticket-priorities",
+    "it-support#contacting-the-service-desk",
+    "information-security#security-incidents",
+    "leave-policy#requesting-time-off"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-17",
+   "category": "typical",
+   "expected": [
+    "it-support#contacting-the-service-desk"
+   ],
+   "retrieved": [
+    "it-support#contacting-the-service-desk",
+    "it-support#password-resets",
+    "it-support#software-requests",
+    "it-support#ticket-priorities"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-18",
+   "category": "typical",
+   "expected": [
+    "vendor-onboarding#payment-terms"
+   ],
+   "retrieved": [
+    "vendor-onboarding#payment-terms",
+    "vendor-onboarding#ingredient-suppliers",
+    "vendor-onboarding#banking-details-and-verification",
+    "expense-policy#scope-and-submission"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-19",
+   "category": "typical",
+   "expected": [
+    "vendor-onboarding#required-documents"
+   ],
+   "retrieved": [
+    "vendor-onboarding#required-documents",
+    "vendor-onboarding#when-this-procedure-applies",
+    "vendor-onboarding#approval-and-competitive-quotes",
+    "vendor-onboarding#banking-details-and-verification"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "typ-20",
+   "category": "typical",
+   "expected": [
+    "leave-policy#bereavement-leave"
+   ],
+   "retrieved": [
+    "leave-policy#bereavement-leave",
+    "leave-policy#carryover",
+    "leave-policy#vacation",
+    "leave-policy#sick-days"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-01",
+   "category": "edge",
+   "expected": [
+    "expense-policy#approval-thresholds"
+   ],
+   "retrieved": [
+    "expense-policy#approval-thresholds",
+    "expense-policy#scope-and-submission",
+    "expense-policy#receipts",
+    "expense-policy#reimbursement-timing"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-02",
+   "category": "edge",
+   "expected": [
+    "travel-policy#international-travel"
+   ],
+   "retrieved": [
+    "travel-policy#international-travel",
+    "travel-policy#domestic-travel-approval",
+    "leave-policy#carryover",
+    "information-security#security-incidents"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-03",
+   "category": "edge",
+   "expected": [
+    "vendor-onboarding#banking-details-and-verification"
+   ],
+   "retrieved": [
+    "vendor-onboarding#banking-details-and-verification",
+    "vendor-onboarding#payment-terms",
+    "vendor-onboarding#required-documents",
+    "vendor-onboarding#approval-and-competitive-quotes"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-04",
+   "category": "edge",
+   "expected": [
+    "expense-policy#meals-and-entertainment"
+   ],
+   "retrieved": [
+    "expense-policy#meals-and-entertainment",
+    "travel-policy#per-diem-and-incidentals",
+    "travel-policy#domestic-travel-approval",
+    "travel-policy#international-travel"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-05",
+   "category": "edge",
+   "expected": [
+    "information-security#security-incidents",
+    "it-support#contacting-the-service-desk"
+   ],
+   "retrieved": [
+    "information-security#devices-and-removable-media",
+    "information-security#security-incidents",
+    "it-support#approved-hardware",
+    "travel-policy#international-travel"
+   ],
+   "hit": 1.0,
+   "recall": 0.5,
+   "reciprocal_rank": 0.5,
+   "average_precision": 0.25
+  },
+  {
+   "id": "edg-06",
+   "category": "edge",
+   "expected": [
+    "expense-policy#non-reimbursable-items"
+   ],
+   "retrieved": [
+    "expense-policy#non-reimbursable-items",
+    "travel-policy#per-diem-and-incidentals",
+    "expense-policy#meals-and-entertainment",
+    "expense-policy#mileage-and-ground-transport"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "edg-07",
+   "category": "edge",
+   "expected": [
+    "leave-policy#vacation"
+   ],
+   "retrieved": [
+    "leave-policy#vacation",
+    "leave-policy#carryover",
+    "leave-policy#sick-days",
+    "records-retention#employee-records"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "adv-02",
+   "category": "adversarial",
+   "expected": [
+    "expense-policy#meals-and-entertainment"
+   ],
+   "retrieved": [
+    "expense-policy#meals-and-entertainment",
+    "travel-policy#domestic-travel-approval",
+    "travel-policy#air-travel-class",
+    "leave-policy#carryover"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "adv-04",
+   "category": "adversarial",
+   "expected": [
+    "information-security#example-of-a-phishing-message"
+   ],
+   "retrieved": [
+    "information-security#example-of-a-phishing-message",
+    "information-security#reporting-phishing",
+    "information-security#passwords-and-multi-factor-authentication",
+    "it-support#password-resets"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  },
+  {
+   "id": "adv-05",
+   "category": "adversarial",
+   "expected": [
+    "expense-policy#approval-thresholds"
+   ],
+   "retrieved": [
+    "expense-policy#approval-thresholds",
+    "travel-policy#per-diem-and-incidentals",
+    "expense-policy#reimbursement-timing",
+    "expense-policy#receipts"
+   ],
+   "hit": 1.0,
+   "recall": 1.0,
+   "reciprocal_rank": 1.0,
+   "average_precision": 1.0
+  }
+ ]
+}

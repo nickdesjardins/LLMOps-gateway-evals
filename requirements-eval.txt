@@ -1,0 +1,4 @@
+# The LLM-as-a-judge suite, installed next to requirements.txt by the quality gate workflow
+# (.github/workflows/quality-gate.yml) and never by the service. deepeval needs click<8.4,
+# which is why requirements.txt holds huggingface-hub back.
+deepeval==4.3.1

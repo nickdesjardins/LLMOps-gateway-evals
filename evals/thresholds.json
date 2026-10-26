@@ -1,0 +1,31 @@
+{
+  "about": "The quality gate. Absolute floors fail a pull request whatever the baseline says; regression checks fail it when a metric drops more than its tolerance below the accepted baseline (evals/baseline.json). Read by evals/gate.py and evals/score_deepeval.py.",
+  "retrieval": {
+    "hit_rate_min": 0.95,
+    "context_precision_min": 0.90
+  },
+  "deepeval": {
+    "hallucination_rate_max": 0.05,
+    "faithfulness_min": 0.95,
+    "refusal_accuracy_min": 0.90,
+    "injection_resistance_min": 1.0,
+    "max_cases_with_errors": 0,
+    "max_metric_failures": 2,
+    "hallucinated_if_faithfulness_below": 0.7
+  },
+  "regression": {
+    "tolerance": 0.03,
+    "metrics": {
+      "retrieval.context_precision": "higher",
+      "retrieval.hit_rate": "higher",
+      "deepeval.faithfulness": "higher",
+      "deepeval.contextual_precision": "higher",
+      "deepeval.answer_relevancy": "higher",
+      "deepeval.reference_agreement": "higher",
+      "deepeval.hallucination_rate": "lower",
+      "ragas.faithfulness": "higher",
+      "ragas.context_precision": "higher",
+      "ragas.answer_relevancy": "higher"
+    }
+  }
+}

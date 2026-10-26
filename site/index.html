@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- This page cannot send response headers, so its security policy is set here. Scripts and
+       styles come from this page's own files only. The one outside address is the live demo's
+       icon, which assets/site.js loads as a picture to learn that the demo is awake. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' https://*.onrender.com; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="format-detection" content="telephone=no">
+  <title>Production LLMOps Gateway</title>
+  <meta name="description" content="A FastAPI gateway in front of every model call: a Redis semantic cache measured on its own threshold trade-off, complexity routing across model tiers, multi-model failover, Langfuse tracing with tokens and cost, and a DeepEval and Ragas quality gate that blocks pull requests.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Production LLMOps Gateway">
+  <meta property="og:description" content="Semantic caching, complexity routing, failover, tracing and evaluation in CI: FastAPI, Redis vector search, Langfuse, DeepEval, Ragas, GitHub Actions, free models.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#runs">Skip to the recorded requests</a>
+
+<header class="topbar">
+  <div class="wrap topbar__row">
+    <a class="brand" href="./">
+      <svg class="brand__mark" viewBox="0 0 26 26" aria-hidden="true"><rect class="bg" width="26" height="26" rx="7"/><path class="ln" d="M4 13h7"/><rect class="pt" x="11" y="6" width="3.2" height="14" rx="1.6"/><path class="ln" d="M14.2 13l7-5M14.2 13l7 5"/><circle class="dot" cx="7.5" cy="19.5" r="2.2"/></svg>
+      <span>LLMOps Gateway</span>
+    </a>
+    <nav class="topbar__nav" aria-label="On this page">
+      <a href="#runs">Requests</a>
+      <a href="#flow">Flow</a>
+      <a href="#threshold">Threshold</a>
+      <a href="#routing">Routing</a>
+      <a href="#gate">Quality gate</a>
+      <a href="#stack">Stack</a>
+    </nav>
+    <a class="chip-link" id="demo-chip" hidden><span class="dotmark" aria-hidden="true"></span>Live demo</a>
+    <button class="iconbtn" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">
+      <svg class="icon theme-icon--light" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 0 1 9.8 4a8 8 0 1 0 10.2 10.2z"/></svg>
+      <svg class="icon theme-icon--dark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero__grid">
+      <div>
+        <p class="kicker">Applied AI · LLMOps · evaluation in CI</p>
+        <h1>Pay for an answer once. <span>Prove it is still right.</span></h1>
+        <p class="lede">
+          Three things keep generative features out of production: the model bill grows with every
+          request, tail latency is whatever the provider's queue is today, and nobody can show that
+          last week's prompt change did not make the answers worse. This gateway sits in front of
+          every model call and deals with all three. A question that was already answered comes
+          back from a Redis semantic cache in milliseconds, with no model call. A new one is scored
+          for complexity and sent to a light or a heavy chain of models, and a failing model hands
+          over to the next one without dropping the request. Every step is a span of one trace,
+          with tokens and dollars, mirrored to Langfuse.
+        </p>
+        <p class="lede"><strong>And nothing merges on a hunch.</strong> A GitHub Actions workflow answers a golden set of questions with the real pipeline, has DeepEval and Ragas judge every answer, and blocks the pull request when the hallucination rate passes 5% or faithfulness drops below 0.95.</p>
+        <p class="stackline">FastAPI · Pydantic v2 · Server-Sent Events · Redis 8 vector search (HNSW, cosine) · bge-small embeddings on the CPU · Langfuse v5 · DeepEval · Ragas · GitHub Actions · free OpenRouter models</p>
+      </div>
+      <div class="demo" id="demo" aria-label="Live demo">
+        <!-- THE ONE PLACE that holds the address of the live demo: the Render service's address
+             with /#ask after it, https:// written once. With a host that ends in .invalid, the
+             page says the demo is not online yet and asks nothing. tests/test_site.py checks it. -->
+        <a class="btn btn--primary btn--lg" id="demo-link" href="https://llmops-gateway.invalid/#ask">Open the live demo</a>
+        <a class="btn btn--lg" href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals">Code on GitHub</a>
+        <p class="demo__line" id="demo-words" role="status">The live demo runs on free hosting and sleeps between visits. Opening it wakes it, which takes about a minute.</p>
+        <p class="demo__cost">Runs at zero marginal cost: free models, a local embedding model, Redis and Langfuse on free plans. Every call is still priced at a paid model's list price, so the savings stay visible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" id="runs" aria-labelledby="runs-title">
+    <div class="section__head">
+      <h2 id="runs-title">Recorded requests</h2>
+      <p class="muted" id="runs-meta">Requests sent through the real application, saved as the API returned them.</p>
+    </div>
+    <div class="tabs" id="run-tabs" role="tablist" aria-label="Recorded requests"></div>
+    <article class="card run" id="run">
+      <p class="muted" id="run-fallback">The recorded requests are read from <a href="recorded/runs.json">recorded/runs.json</a>; when that file is not there yet, or JavaScript is off, this sentence is all there is.</p>
+    </article>
+  </section>
+
+  <section class="wrap section" id="flow" aria-labelledby="flow-title">
+    <div class="section__head">
+      <h2 id="flow-title">What happens to one request</h2>
+    </div>
+    <p class="muted section__intro">One request, one trace. The cache answers what it has seen; everything else is retrieved, routed, answered by the first model that can, checked, and stored for next time.</p>
+    <svg class="graph" id="graph" viewBox="0 0 960 262" role="img" aria-labelledby="graph-title graph-desc">
+      <title id="graph-title">The request path through the gateway</title>
+      <desc id="graph-desc">A request passes the guard, then the semantic cache. A hit returns the stored answer. A miss goes to retrieval, then the complexity router, which picks the light or the heavy chain; a failing model hands over to the next, and the other tier is the last resort. The answer is validated, streamed back, and stored in the cache. Every step reports to the trace, which is mirrored to Langfuse.</desc>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <g class="g-edges">
+        <circle class="endpoint" cx="16" cy="86" r="5"/>
+        <path class="edge" d="M22 86H34" marker-end="url(#arrow)"/>
+        <path class="edge" d="M150 86H170" marker-end="url(#arrow)"/>
+        <path class="edge edge--hit" d="M230 64V26H902V64" marker-end="url(#arrow)"/>
+        <text class="label label--hit" x="566" y="20" text-anchor="middle">hit: the stored answer, no model call (milliseconds)</text>
+        <path class="edge" d="M286 86H306" marker-end="url(#arrow)"/>
+        <text class="label" x="296" y="78" text-anchor="middle">miss</text>
+        <path class="edge" d="M422 86H442" marker-end="url(#arrow)"/>
+        <path class="edge" d="M558 78L588 58" marker-end="url(#arrow)"/>
+        <path class="edge" d="M558 94L588 114" marker-end="url(#arrow)"/>
+        <path class="edge edge--fail" d="M646 70V100" marker-end="url(#arrow)"/>
+        <text class="label label--fail" x="646" y="158" text-anchor="middle">429, 404, timeout, invalid output:</text>
+        <text class="label label--fail" x="646" y="171" text-anchor="middle">next model, then the other tier</text>
+        <path class="edge" d="M704 50C740 50 748 76 764 80" marker-end="url(#arrow)"/>
+        <path class="edge" d="M704 122C740 122 748 96 764 92" marker-end="url(#arrow)"/>
+        <path class="edge" d="M880 86H890" marker-end="url(#arrow)"/>
+        <circle class="endpoint" cx="902" cy="86" r="5"/>
+        <path class="edge edge--store" d="M822 108V190H230V110" marker-end="url(#arrow)"/>
+        <text class="label label--store" x="410" y="206" text-anchor="middle">a complete, validated, unflagged answer is stored for the next asker</text>
+        <path class="trace" d="M40 226H900"/>
+        <text class="label label--trace" x="470" y="248" text-anchor="middle">every step is a span of one trace: latency, tokens, actual cost, list-price cost, mirrored to Langfuse</text>
+      </g>
+      <g class="g-nodes">
+        <g class="node node--guard"><rect x="35" y="64" width="115" height="44" rx="10"/><text x="92" y="82" text-anchor="middle">Guard</text><text class="kind" x="92" y="98" text-anchor="middle">defang, ceilings</text></g>
+        <g class="node node--cache"><rect x="171" y="64" width="115" height="44" rx="10"/><text x="228" y="82" text-anchor="middle">Semantic cache</text><text class="kind" x="228" y="98" text-anchor="middle">exact, then KNN</text></g>
+        <g class="node"><rect x="307" y="64" width="115" height="44" rx="10"/><text x="364" y="82" text-anchor="middle">Retrieval</text><text class="kind" x="364" y="98" text-anchor="middle">dense + BM25, RRF</text></g>
+        <g class="node"><rect x="443" y="64" width="115" height="44" rx="10"/><text x="500" y="82" text-anchor="middle">Router</text><text class="kind" x="500" y="98" text-anchor="middle">complexity score</text></g>
+        <g class="node node--llm"><rect x="589" y="30" width="115" height="40" rx="10"/><text x="646" y="47" text-anchor="middle">Light chain</text><text class="kind" x="646" y="62" text-anchor="middle">small, cheap</text></g>
+        <g class="node node--llm"><rect x="589" y="102" width="115" height="40" rx="10"/><text x="646" y="119" text-anchor="middle">Heavy chain</text><text class="kind" x="646" y="134" text-anchor="middle">frontier</text></g>
+        <g class="node"><rect x="765" y="64" width="115" height="44" rx="10"/><text x="822" y="82" text-anchor="middle">Validate, stream</text><text class="kind" x="822" y="98" text-anchor="middle">citations, SSE</text></g>
+      </g>
+    </svg>
+    <ol class="flow">
+      <li><span class="flow__n">1</span><h3>Guard</h3><p>Unicode folded, invisible characters dropped, chat-template tokens and spoofed tags neutralized, known injection phrasings flagged. The question then travels inside tags with a random suffix, under a static system prompt that says what they mean. Input and output token ceilings are applied here.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/guard.py">app/guard.py</a></p></li>
+      <li><span class="flow__n">2</span><h3>Semantic cache</h3><p>An exact repeat is a key lookup. Otherwise the question is embedded (bge-small, on the CPU) and Redis returns the three nearest cached questions of the same namespace. The first one above 0.96 that the contrast guard accepts is served.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/cache/semantic.py">app/cache/semantic.py</a></p></li>
+      <li><span class="flow__n">3</span><h3>Retrieval</h3><p>Dense similarity and BM25 each rank the 45 chunks of a seven-document policy handbook; reciprocal rank fusion merges them and the top four become the prompt's sources.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/rag/retriever.py">app/rag/retriever.py</a></p></li>
+      <li><span class="flow__n">4</span><h3>Router</h3><p>No model decides: a score built from named signals (classify, extract, compare, plan, several questions, how many documents the strongest passages span) picks the light or the heavy chain in microseconds, and every point is in the trace.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/routing/complexity.py">app/routing/complexity.py</a></p></li>
+      <li><span class="flow__n">5</span><h3>Cascade</h3><p>A 429, a timeout, a 5xx, a withdrawn model, a refusal or an answer that fails validation moves the request to the next model, then to the other tier. A bad key stops it. Streaming can fail over until the first token is sent.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/routing/cascade.py">app/routing/cascade.py</a></p></li>
+      <li><span class="flow__n">6</span><h3>Telemetry</h3><p>Every step is a span; every model attempt a generation with tokens, the actual cost and the list-price cost. The service keeps p50, p95 and p99 per outcome, and mirrors each trace to Langfuse as it happens.</p><p class="flow__code"><a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/app/telemetry/langfuse_sink.py">app/telemetry/langfuse_sink.py</a></p></li>
+    </ol>
+  </section>
+
+  <section class="wrap section" id="threshold" aria-labelledby="threshold-title">
+    <div class="section__head">
+      <h2 id="threshold-title">The cache threshold, measured</h2>
+      <p class="muted" id="threshold-meta">Pairs of questions embedded with the real model; no answer generated.</p>
+    </div>
+    <p class="section__intro">A semantic cache is only as good as the line it draws between "the same question" and "a different question that looks the same". Seventy-eight pairs below are rephrasings of one question; seventy-eight are look-alikes with another answer (domestic against international meal limits, a P1 against a P2 ticket). Move the threshold and see what each would cost: a missed saving, or a wrong answer served from the cache.</p>
+    <div class="card threshold" id="threshold-card">
+      <p class="muted" id="threshold-fallback">The measurements are read from <a href="recorded/cache-threshold.json">recorded/cache-threshold.json</a>.</p>
+      <div class="threshold__body" id="threshold-body" hidden>
+        <label class="slider" for="threshold-slider"><span>Threshold <strong id="threshold-value">0.96</strong></span>
+          <input type="range" id="threshold-slider" min="0.80" max="0.99" step="0.01" value="0.96">
+        </label>
+        <svg class="chart" id="threshold-chart" viewBox="0 0 640 260" role="img" aria-label="Share of rephrasings served from the cache and share of look-alikes served the wrong answer, by threshold"></svg>
+        <ul class="tiles tiles--compact">
+          <li class="tile"><strong id="t-true">-</strong><span>of rephrasings would be served from the cache</span></li>
+          <li class="tile"><strong id="t-false">-</strong><span>of look-alikes would get the wrong answer, with the contrast guard</span></li>
+          <li class="tile"><strong id="t-false-raw">-</strong><span>without the guard</span></li>
+        </ul>
+        <h3 class="subhead">The look-alikes closest to the line</h3>
+        <div class="tablewrap"><table id="near-table"><thead><tr><th>Similarity</th><th>Cached question</th><th>New question</th><th>Contrast guard</th></tr></thead><tbody></tbody></table></div>
+        <p class="footnote" id="threshold-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" id="replay" aria-labelledby="replay-title">
+    <div class="section__head">
+      <h2 id="replay-title">What the cache saved on a replay</h2>
+      <p class="muted" id="replay-meta"></p>
+    </div>
+    <p class="section__intro" id="replay-intro">A synthetic help-desk day, replayed through the real pipeline: questions drawn from a list of help-desk intents with Zipf-like popularity (a few asked often, most rarely), each time in one of three or four phrasings. Misses are answered by the offline provider and priced at the list price of the tier's reference model, so the saving is measured in dollars a paid deployment would have spent.</p>
+    <div class="tabs" id="replay-tabs" role="tablist" aria-label="Threshold"></div>
+    <ul class="tiles" id="replay-tiles">
+      <li class="tile"><strong id="r-hit">-</strong><span>of requests answered by the cache</span></li>
+      <li class="tile"><strong id="r-split">-</strong><span>exact repeats / semantic matches</span></li>
+      <li class="tile"><strong id="r-false">-</strong><span>wrong answers served (false hits)</span></li>
+      <li class="tile"><strong id="r-cost">-</strong><span>of the list-price model spend avoided</span></li>
+      <li class="tile"><strong id="r-exact">-</strong><span>exact lookup, p50</span></li>
+      <li class="tile"><strong id="r-semantic">-</strong><span>semantic lookup (embedding included), p50 / p99</span></li>
+    </ul>
+    <p class="footnote" id="replay-note">Read from <a href="recorded/replay.json">recorded/replay.json</a>, written by <code>python -m evals.replay</code>.</p>
+  </section>
+
+  <section class="wrap section" id="routing" aria-labelledby="routing-title">
+    <div class="section__head">
+      <h2 id="routing-title">Routing by complexity</h2>
+      <p class="muted" id="routing-meta"></p>
+    </div>
+    <p class="section__intro">Most questions a help desk gets are lookups: one passage, one number. They go to the light chain. Comparing, planning, a scenario, or passages from several documents push the score past 0.5 and the question goes to the heavy chain. The router is a few regular expressions and one number from retrieval, so it costs nothing and its reasons are visible. Here is what it decided for every question of the golden set:</p>
+    <div class="tabs" id="routing-tabs" role="tablist" aria-label="Filter by tier"></div>
+    <div class="tablewrap"><table id="routing-table"><thead><tr><th>Question</th><th>Tier</th><th>Score</th><th>Signals</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="wrap section" id="economics" aria-labelledby="economics-title">
+    <div class="section__head">
+      <h2 id="economics-title">Token economics</h2>
+    </div>
+    <p class="section__intro">What a month of traffic costs at list price, and what each lever removes. The prices are Anthropic's per million tokens; the defaults are this gateway's measured prompt size and the replay's hit rate. Change them.</p>
+    <div class="card calc" id="calc">
+      <div class="calc__inputs">
+        <label>Requests per month <input type="number" id="c-requests" min="0" step="1000" value="100000"></label>
+        <label>Input tokens per request <input type="number" id="c-input" min="0" step="50" value="900"></label>
+        <label>Output tokens per request <input type="number" id="c-output" min="0" step="10" value="150"></label>
+        <label>Share that needs the heavy tier <input type="number" id="c-heavy" min="0" max="100" step="1" value="11"> %</label>
+        <label>Cache hit rate <input type="number" id="c-hit" min="0" max="100" step="1" value="80"> %</label>
+      </div>
+      <div class="tablewrap"><table id="calc-table"><thead><tr><th>Setup</th><th>Monthly cost</th><th>Against all-frontier</th></tr></thead><tbody></tbody></table></div>
+      <p class="footnote" id="calc-note"></p>
+    </div>
+    <div class="cards">
+      <article class="card"><h3>Static prefix first</h3><p>Providers cache prompts by prefix. The system prompt here has no date, no id and no nonce: it is byte for byte the same on every request, and the varying parts (passages, question) come after it. With Claude it is marked <code>cache_control: ephemeral</code>, and repeated prefixes are read at a tenth of the input price or less.</p></article>
+      <article class="card"><h3>Ceilings on output</h3><p>350 tokens for the light tier, 900 for the heavy one, whatever the client asks for. A model that rambles, or thinks out loud, is cut off and the next model is tried, so one bad response cannot run up the bill.</p></article>
+      <article class="card"><h3>Priced twice</h3><p>Every call carries two costs: what it cost (zero on free models, OpenRouter's own figure otherwise) and what the same tokens would cost at the list price of Claude Haiku 5.5 or Claude Opus 5.5. The second is what the cache and the router are measured against.</p></article>
+    </div>
+  </section>
+
+  <section class="wrap section" id="gate" aria-labelledby="gate-title">
+    <div class="section__head">
+      <h2 id="gate-title">The quality gate</h2>
+    </div>
+    <p class="section__intro">Telemetry tells you what happened in production; it cannot tell you whether a change is safe to merge. That is the job of an offline evaluation against a fixed set of questions, on every pull request. The golden set has 37 cases: 20 typical questions, 7 edge cases (boundaries, multi-step, two documents), 5 prompt-injection attempts and 5 questions the handbook does not answer.</p>
+    <div class="cards">
+      <article class="card"><span class="sev" data-sev="medium">retrieval</span><h3>Context precision</h3><p>Are the passages that hold the answer ranked first? Scored twice: from labels, with no model, on every pull request; and by DeepEval's and Ragas' judges against the reference answer.</p></article>
+      <article class="card"><span class="sev" data-sev="high">generation</span><h3>Faithfulness</h3><p>Every claim of the answer is extracted and checked against the retrieved passages. A claim the passages do not support counts against the answer, not only one they contradict. The gate wants 0.95 or more.</p></article>
+      <article class="card"><span class="sev" data-sev="medium">generation</span><h3>Answer relevance</h3><p>How much of the answer addresses the question. An answer can be faithful and useless; this catches the drift.</p></article>
+      <article class="card"><span class="sev" data-sev="high">safety</span><h3>Hallucination rate</h3><p>A case hallucinates when its answer contradicts the reference passages, when fewer than 70% of its claims are supported, or when the system answers a question the handbook does not answer. The gate allows 5% at most.</p></article>
+      <article class="card"><span class="sev" data-sev="high">safety</span><h3>Injection resistance</h3><p>Every adversarial case names strings that must not appear in its answer (a canary, a system prompt line). One leak fails the build: no judge needed.</p></article>
+      <article class="card"><span class="sev" data-sev="medium">behaviour</span><h3>Refusal accuracy</h3><p>Answered when it should, declined when it should. Measured exactly, from the refusal token.</p></article>
+    </div>
+    <h3 class="subhead">How a pull request is blocked</h3>
+    <ol class="pipeline" id="gate-pipeline">
+      <li><strong>Tests</strong><span>the hermetic suite and ruff; no key, no network</span></li>
+      <li><strong>Retrieval check</strong><span>the real embedding model on the golden set; no key</span></li>
+      <li><strong>Generate answers</strong><span>the real pipeline answers all 37 cases on free models</span></li>
+      <li><strong>DeepEval</strong><span>RAG triad and hallucination, LLM-as-a-judge</span></li>
+      <li><strong>Ragas</strong><span>a second judge of the same answers, in its own environment</span></li>
+      <li><strong>Gate</strong><span>floors, plus no metric more than 0.03 below the accepted baseline</span></li>
+    </ol>
+    <div class="tablewrap"><table id="gate-table"><thead><tr><th>Rule</th><th>Threshold</th><th>Last measured</th></tr></thead><tbody></tbody></table></div>
+    <p class="footnote" id="gate-note">The thresholds are read from the repository's <a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/evals/thresholds.json">evals/thresholds.json</a>; the measurements from <a href="recorded/retrieval.json">recorded/retrieval.json</a> and, once the judged suite has run, <a href="recorded/deepeval.json">recorded/deepeval.json</a> and <a href="recorded/ragas.json">recorded/ragas.json</a>.</p>
+  </section>
+
+  <section class="wrap section" id="stack" aria-labelledby="stack-title">
+    <div class="section__head">
+      <h2 id="stack-title">What it runs on</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Part</th><th>This demo (free)</th><th>Drop-in alternative</th></tr></thead>
+        <tbody>
+          <tr><td>Gateway</td><td>FastAPI, Pydantic v2 bodies, SSE streaming, an OpenAI-compatible <code>/v1/chat/completions</code></td><td>Any ASGI host; any Chat Completions client points at it unchanged</td></tr>
+          <tr><td>Semantic cache</td><td>Redis 8 with vector search on Redis Cloud's free plan (HNSW, cosine), or in memory</td><td>Any Redis 8 or Redis Stack (<code>docker compose up -d redis</code>)</td></tr>
+          <tr><td>Embeddings</td><td>BAAI/bge-small-en-v1.5 through fastembed, on the CPU, baked into the image</td><td>Any fastembed model (<code>FASTEMBED_MODEL</code>)</td></tr>
+          <tr><td>Models</td><td>Two chains of free OpenRouter models, light and heavy</td><td>Claude Haiku 5.5 and Claude Opus 5.5 through the Anthropic SDK, with prompt caching; OpenAI or Gemini</td></tr>
+          <tr><td>Tracing</td><td>In-process traces and percentiles; Langfuse Cloud's free plan when its keys are set</td><td>A self-hosted Langfuse (<code>LANGFUSE_BASE_URL</code>)</td></tr>
+          <tr><td>Evaluation</td><td>DeepEval and Ragas with free judge models, on GitHub Actions</td><td>A stronger judge: <code>EVAL_JUDGE_PROVIDER=anthropic</code>, a few cents a run</td></tr>
+          <tr><td>Hosting</td><td>Render free web service (Docker), GitHub Pages for this page</td><td>Docker Compose, any container host</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="links">
+      <a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals#readme">Read the README</a>
+      <a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals/blob/main/docs/DEPLOY.md">How it is deployed</a>
+      <a href="https://nickdesjardins.github.io/Invoice-Extraction-Service/">Phase 1: Invoice Extraction Service</a>
+      <a href="https://nickdesjardins.github.io/hybrid-knowledge-rag/">Phase 2: Compliance Retrieval Engine</a>
+      <a href="https://nickdesjardins.github.io/autonomous-operation-marketing/">Phase 3: Multi-Agent Operations Pipeline</a>
+    </p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__row">
+    <span>Phase 4 of an Applied AI portfolio: semantic caching, routing, tracing, evaluation in CI. <a href="https://webman.dev/">webman.dev</a></span>
+    <span id="foot-recorded"></span>
+  </div>
+</footer>
+</body>
+</html>

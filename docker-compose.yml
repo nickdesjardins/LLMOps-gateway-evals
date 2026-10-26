@@ -1,0 +1,38 @@
+# Redis 8 with vector search for local development, and optionally the gateway itself.
+#
+#   docker compose up -d redis                  # then REDIS_URL=redis://localhost:6379/0
+#   docker compose --profile full up --build    # Redis and the gateway on http://127.0.0.1:8000
+#
+# Redis 8 ships the Query Engine (FT.CREATE, FT.SEARCH, vector fields) in the standard image.
+services:
+  redis:
+    image: redis:8.2
+    container_name: llmops-redis
+    restart: unless-stopped
+    # Bound to loopback by default; the cache holds answers, not secrets, but it has no password.
+    ports:
+      - "${REDIS_BIND:-127.0.0.1}:${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "volatile-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  gateway:
+    build: .
+    container_name: llmops-gateway
+    profiles: ["full"]
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+      - path: .env.local
+        required: false
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${GATEWAY_BIND:-127.0.0.1}:8000:8000"

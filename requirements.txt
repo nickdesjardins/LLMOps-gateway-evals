@@ -1,0 +1,31 @@
+# Exact versions on purpose. The host installs this file again at every deploy, so "whatever is
+# newest that day" would mean running versions nobody tested. These are the versions the test
+# suite passes on. To move one: change the number, run pytest, commit.
+
+# --- API ----------------------------------------------------------------------
+fastapi==0.161.1
+starlette==1.9.0               # fastapi brings it anyway; named because app/main.py imports it
+uvicorn[standard]==0.54.0
+
+# --- Validation and configuration ---------------------------------------------
+pydantic==2.14.1
+pydantic-settings==2.16.1
+python-dotenv==1.2.4
+
+# --- Model providers -----------------------------------------------------------
+openai==3.37.0                 # OpenRouter, OpenAI and Gemini (Chat Completions)
+anthropic==2.2.0               # LLM_PROVIDER=anthropic (official SDK, prompt caching)
+
+# --- Semantic cache and embeddings ----------------------------------------------
+redis==8.1.0                   # the vector index (FT.CREATE / FT.SEARCH, HNSW, cosine)
+numpy==2.5.4
+fastembed==0.9.0               # BAAI/bge-small-en-v1.5 on the CPU, no API call
+huggingface-hub==1.16.1        # held back: deepeval (requirements-eval.txt) needs click<8.4
+
+# --- Telemetry -----------------------------------------------------------------
+langfuse==5.0.4                # OpenTelemetry-based SDK; only used when its keys are set
+
+# --- Tests ---------------------------------------------------------------------
+httpx==0.28.1                  # drives the app in-process (ASGITransport)
+pytest==9.1.1
+pytest-asyncio==1.4.0

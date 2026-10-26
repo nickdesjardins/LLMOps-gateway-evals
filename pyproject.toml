@@ -1,0 +1,36 @@
+[project]
+name = "llmops-gateway"
+version = "1.0.0"
+description = "Production LLMOps gateway: Redis semantic cache, complexity routing, multi-model failover, Langfuse tracing, and a DeepEval/Ragas quality gate in CI"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-q -p no:randomly"
+faulthandler_timeout = 120
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = [".venv-ragas"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# B008: `Depends(...)` in parameter defaults is the FastAPI dependency idiom.
+ignore = ["B008"]
+
+[tool.ruff.lint.pycodestyle]
+# Code is formatted at 110 columns; docstrings, comments and prompt literals may run longer.
+max-line-length = 130
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+"app/rag/prompts.py" = ["E501"]
+# Command-line reports and prompt templates: long f-strings and literals read better unbroken.
+"evals/*" = ["E501"]
+"scripts/*" = ["E501"]

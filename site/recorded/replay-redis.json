@@ -1,0 +1,148 @@
+{
+ "measured_at": "2026-10-23T18:46:51Z",
+ "embedder": "fastembed:BAAI/bge-small-en-v1.5",
+ "workload": {
+  "requests": 250,
+  "intents": 24,
+  "distinct_questions": 57,
+  "seed": 7,
+  "zipf_s": 1.1,
+  "provider": "offline (no model called; misses priced at the reference list price)",
+  "cache_backend": "redis"
+ },
+ "reference_models": {
+  "light": "claude-haiku-5-5",
+  "heavy": "claude-opus-5-5"
+ },
+ "runs": [
+  {
+   "threshold": 0.96,
+   "requests": 250,
+   "hits": 199,
+   "exact_hits": 172,
+   "semantic_hits": 27,
+   "misses": 51,
+   "hit_rate": 0.796,
+   "false_hits": 0,
+   "blocked_by_guard": 1,
+   "exact_lookup_ms": {
+    "p50": 2.4,
+    "p95": 3.1,
+    "p99": 3.73
+   },
+   "semantic_lookup_ms": {
+    "p50": 3.62,
+    "p95": 12.92,
+    "p99": 17.83
+   },
+   "hit_latency_ms": {
+    "p50": 2.61,
+    "p95": 4.18,
+    "p99": 12.91
+   },
+   "miss_overhead_ms": {
+    "p50": 25.71,
+    "p95": 29.14,
+    "p99": 30.1
+   },
+   "tokens": {
+    "input": 40937,
+    "output": 2316
+   },
+   "reference_cost_usd": "0.0052517000",
+   "avoided_cost_usd": "0.0207845000",
+   "cost_without_cache_usd": "0.0260362000",
+   "cost_reduction": 0.7983,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "redis"
+  },
+  {
+   "threshold": 0.92,
+   "requests": 250,
+   "hits": 204,
+   "exact_hits": 162,
+   "semantic_hits": 42,
+   "misses": 46,
+   "hit_rate": 0.816,
+   "false_hits": 0,
+   "blocked_by_guard": 3,
+   "exact_lookup_ms": {
+    "p50": 2.29,
+    "p95": 3.01,
+    "p99": 3.33
+   },
+   "semantic_lookup_ms": {
+    "p50": 3.79,
+    "p95": 12.56,
+    "p99": 12.71
+   },
+   "hit_latency_ms": {
+    "p50": 2.52,
+    "p95": 9.73,
+    "p99": 12.74
+   },
+   "miss_overhead_ms": {
+    "p50": 25.55,
+    "p95": 28.94,
+    "p99": 30.28
+   },
+   "tokens": {
+    "input": 36999,
+    "output": 2140
+   },
+   "reference_cost_usd": "0.0047699000",
+   "avoided_cost_usd": "0.0212684000",
+   "cost_without_cache_usd": "0.0260383000",
+   "cost_reduction": 0.8168,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "redis"
+  },
+  {
+   "threshold": 0.88,
+   "requests": 250,
+   "hits": 215,
+   "exact_hits": 130,
+   "semantic_hits": 85,
+   "misses": 35,
+   "hit_rate": 0.86,
+   "false_hits": 2,
+   "blocked_by_guard": 21,
+   "exact_lookup_ms": {
+    "p50": 2.35,
+    "p95": 3.03,
+    "p99": 24.95
+   },
+   "semantic_lookup_ms": {
+    "p50": 3.73,
+    "p95": 13.02,
+    "p99": 13.48
+   },
+   "hit_latency_ms": {
+    "p50": 2.82,
+    "p95": 12.21,
+    "p99": 14.43
+   },
+   "miss_overhead_ms": {
+    "p50": 25.33,
+    "p95": 29.69,
+    "p99": 94.98
+   },
+   "tokens": {
+    "input": 28202,
+    "output": 1548
+   },
+   "reference_cost_usd": "0.0035942000",
+   "avoided_cost_usd": "0.0223303000",
+   "cost_without_cache_usd": "0.0259245000",
+   "cost_reduction": 0.8614,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "redis"
+  }
+ ]
+}

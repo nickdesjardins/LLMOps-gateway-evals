@@ -1,0 +1,64 @@
+# Publishes the folder site/ on GitHub Pages. That page is the address to give to people: it is
+# there at once, shows the recorded requests and measurements, and wakes the live demo (which
+# sleeps on its free host) while the visitor reads.
+#
+# One thing has to be done by hand, once, before the first push: in the repository's
+# Settings > Pages, set Source to "GitHub Actions".
+#
+# The page quotes figures from site/recorded/, so it is checked before it goes out: the first
+# job runs tests/test_site.py, which holds the page to the recordings and to the code.
+name: Project page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - evals/thresholds.json
+      - tests/test_site.py
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Does the page say what the records say?
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - name: Compare the page with its sources
+        run: python -m pytest -q tests/test_site.py
+
+  publish:
+    name: Publish site/
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

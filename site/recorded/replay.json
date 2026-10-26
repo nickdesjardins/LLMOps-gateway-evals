@@ -1,0 +1,148 @@
+{
+ "measured_at": "2026-10-23T18:47:13Z",
+ "embedder": "fastembed:BAAI/bge-small-en-v1.5",
+ "workload": {
+  "requests": 250,
+  "intents": 24,
+  "distinct_questions": 57,
+  "seed": 7,
+  "zipf_s": 1.1,
+  "provider": "offline (no model called; misses priced at the reference list price)",
+  "cache_backend": "memory"
+ },
+ "reference_models": {
+  "light": "claude-haiku-5-5",
+  "heavy": "claude-opus-5-5"
+ },
+ "runs": [
+  {
+   "threshold": 0.96,
+   "requests": 250,
+   "hits": 199,
+   "exact_hits": 172,
+   "semantic_hits": 27,
+   "misses": 51,
+   "hit_rate": 0.796,
+   "false_hits": 0,
+   "blocked_by_guard": 1,
+   "exact_lookup_ms": {
+    "p50": 0.01,
+    "p95": 0.02,
+    "p99": 0.02
+   },
+   "semantic_lookup_ms": {
+    "p50": 0.57,
+    "p95": 7.99,
+    "p99": 9.78
+   },
+   "hit_latency_ms": {
+    "p50": 0.1,
+    "p95": 0.7,
+    "p99": 8.01
+   },
+   "miss_overhead_ms": {
+    "p50": 16.58,
+    "p95": 18.37,
+    "p99": 19.27
+   },
+   "tokens": {
+    "input": 40937,
+    "output": 2316
+   },
+   "reference_cost_usd": "0.0052517000",
+   "avoided_cost_usd": "0.0207845000",
+   "cost_without_cache_usd": "0.0260362000",
+   "cost_reduction": 0.7983,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "memory"
+  },
+  {
+   "threshold": 0.92,
+   "requests": 250,
+   "hits": 204,
+   "exact_hits": 162,
+   "semantic_hits": 42,
+   "misses": 46,
+   "hit_rate": 0.816,
+   "false_hits": 0,
+   "blocked_by_guard": 3,
+   "exact_lookup_ms": {
+    "p50": 0.01,
+    "p95": 0.02,
+    "p99": 0.03
+   },
+   "semantic_lookup_ms": {
+    "p50": 0.64,
+    "p95": 8.33,
+    "p99": 8.55
+   },
+   "hit_latency_ms": {
+    "p50": 0.12,
+    "p95": 6.57,
+    "p99": 8.49
+   },
+   "miss_overhead_ms": {
+    "p50": 17.39,
+    "p95": 20.24,
+    "p99": 21.04
+   },
+   "tokens": {
+    "input": 36999,
+    "output": 2140
+   },
+   "reference_cost_usd": "0.0047699000",
+   "avoided_cost_usd": "0.0212684000",
+   "cost_without_cache_usd": "0.0260383000",
+   "cost_reduction": 0.8168,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "memory"
+  },
+  {
+   "threshold": 0.88,
+   "requests": 250,
+   "hits": 215,
+   "exact_hits": 130,
+   "semantic_hits": 85,
+   "misses": 35,
+   "hit_rate": 0.86,
+   "false_hits": 2,
+   "blocked_by_guard": 21,
+   "exact_lookup_ms": {
+    "p50": 0.02,
+    "p95": 0.03,
+    "p99": 0.04
+   },
+   "semantic_lookup_ms": {
+    "p50": 0.66,
+    "p95": 9.76,
+    "p99": 12.26
+   },
+   "hit_latency_ms": {
+    "p50": 0.18,
+    "p95": 8.62,
+    "p99": 10.94
+   },
+   "miss_overhead_ms": {
+    "p50": 18.66,
+    "p95": 23.52,
+    "p99": 25.39
+   },
+   "tokens": {
+    "input": 28202,
+    "output": 1548
+   },
+   "reference_cost_usd": "0.0035942000",
+   "avoided_cost_usd": "0.0223303000",
+   "cost_without_cache_usd": "0.0259245000",
+   "cost_reduction": 0.8614,
+   "tiers": {
+    "light": 250
+   },
+   "backend": "memory"
+  }
+ ]
+}

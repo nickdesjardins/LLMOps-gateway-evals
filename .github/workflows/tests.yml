@@ -1,0 +1,39 @@
+# Runs the hermetic test suite on every push to main and on every pull request.
+#
+# It needs no API key, no Redis and no network beyond pip: every external service is replaced
+# by a stand-in (tests/conftest.py refuses any outbound connection), so it costs nothing and
+# stores no secret.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: pytest + ruff
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - name: Install requirements
+        # deepeval is installed too: tests/test_evals.py runs its metrics through the gateway's
+        # judge with a scripted model. ruff is pinned: a newer release can change formatting.
+        run: pip install -r requirements.txt -r requirements-eval.txt ruff==0.17.2
+      - name: Lint and format check
+        run: |
+          ruff check app evals scripts tests
+          ruff format --check app evals scripts tests
+      - name: Run the hermetic suite
+        env:
+          DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+        run: python -m pytest -q

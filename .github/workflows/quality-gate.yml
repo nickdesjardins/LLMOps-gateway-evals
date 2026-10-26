@@ -1,0 +1,228 @@
+# The quality gate: no pull request merges if the answers got worse.
+#
+#   changes     Decides whether the judged suite must run: it does when the pull request
+#               touches anything an answer depends on (app/, corpus/, evals/, the requirements).
+#   retrieval   Every time. The real embedding model and BM25 on the golden set; no key.
+#   answers     The real pipeline answers the 37 golden cases on free OpenRouter models
+#               (secret OPENROUTER_API_KEY, about 40 requests).
+#   deepeval    The RAG triad and hallucination, LLM-as-a-judge (7 judge calls per answered
+#               case, about 210 in all).
+#   ragas       A second judge of the same answers, in its own environment (about 7 calls per
+#               answered case, about 210 in all). A judged run is about 460 free requests: it
+#               needs OpenRouter's 1,000-a-day allowance, not the 50 of an account without credits.
+#   gate        Applies evals/thresholds.json and the accepted baseline (evals/baseline.json).
+#               Hallucination rate above 5% or faithfulness below 0.95 fails it, and so does
+#               missing evidence: a judged run that should have happened and did not.
+#
+# Make "Quality gate / Gate" a required status check on main (docs/DEPLOY.md, step 6) and a
+# failing gate blocks the merge button. The gate job always runs, so a pull request that touches
+# only the README is not left waiting for a check that never reports.
+#
+# Pull requests from forks get no secrets: their judged suite cannot run and the gate says so.
+name: Quality gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      judged:
+        description: "Run the judged suite (DeepEval and Ragas) even if no answer-relevant file changed"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+  RAGAS_DO_NOT_TRACK: "true"
+  FASTEMBED_CACHE_DIR: ${{ github.workspace }}/.fastembed_cache
+
+jobs:
+  changes:
+    name: What changed?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      judged: ${{ steps.decide.outputs.judged }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          FORCE: ${{ inputs.judged }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            judged="$FORCE"
+          elif [ "$EVENT" = "pull_request" ]; then
+            if git diff --name-only "$BASE" HEAD | grep -qE '^(app/|corpus/|evals/|requirements[a-z-]*\.txt$)'; then
+              judged=true
+            else
+              judged=false
+            fi
+          else
+            judged=false  # a push to main was gated on its pull request
+          fi
+          echo "judged=$judged" >> "$GITHUB_OUTPUT"
+          echo "Judged suite: $judged"
+
+  retrieval:
+    name: Retrieval check (no key)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: .fastembed_cache
+          key: fastembed-bge-small-en-v1.5
+      - run: pip install -r requirements.txt
+      - run: python -m evals.retrieval_check --out evals/out/retrieval.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrieval
+          path: evals/out/retrieval.json
+
+  answers:
+    name: Generate answers (live pipeline)
+    needs: changes
+    if: needs.changes.outputs.judged == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: .fastembed_cache
+          key: fastembed-bge-small-en-v1.5
+      - run: pip install -r requirements.txt
+      - name: Answer the golden set
+        env:
+          LLM_PROVIDER: openrouter
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CACHE_BACKEND: memory
+          # Optional: the run's traces appear in Langfuse when these secrets exist.
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com' }}
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::The repository secret OPENROUTER_API_KEY is missing (or this pull request comes from a fork): the judged suite cannot run."
+            exit 1
+          fi
+          python -m evals.generate_answers --out evals/out/answers.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: answers
+          path: |
+            evals/out/answers.jsonl
+            evals/out/run.json
+
+  deepeval:
+    name: DeepEval (RAG triad, hallucination)
+    needs: answers
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-eval.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: answers
+          path: evals/out
+      - name: Judge the answers
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EVAL_JUDGE_PROVIDER: ${{ vars.EVAL_JUDGE_PROVIDER || 'openrouter' }}
+          EVAL_JUDGE_MODELS: ${{ vars.EVAL_JUDGE_MODELS || 'nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free' }}
+        run: python -m evals.score_deepeval --answers evals/out/answers.jsonl --out evals/out/deepeval.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deepeval
+          path: evals/out/deepeval.json
+
+  ragas:
+    name: Ragas (second judge)
+    needs: answers
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: .fastembed_cache
+          key: fastembed-bge-small-en-v1.5
+      # Its own environment on purpose: ragas pins openai<2, the service runs openai 3.
+      - run: pip install -r requirements-ragas.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: answers
+          path: evals/out
+      - name: Judge the answers
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          RAGAS_JUDGE_MODELS: ${{ vars.RAGAS_JUDGE_MODELS || 'nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-31b-it:free' }}
+        run: python evals/score_ragas.py --answers evals/out/answers.jsonl --out evals/out/ragas.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ragas
+          path: evals/out/ragas.json
+
+  gate:
+    name: Gate
+    needs: [changes, retrieval, answers, deepeval, ragas]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+      - uses: actions/download-artifact@v4
+        with:
+          path: evals/out
+          merge-multiple: true
+      - name: Apply the thresholds
+        env:
+          JUDGED: ${{ needs.changes.outputs.judged }}
+        run: |
+          args="--retrieval evals/out/retrieval.json"
+          if [ "$JUDGED" = "true" ]; then
+            # Named whether or not they were produced: a missing report fails the gate.
+            args="$args --deepeval evals/out/deepeval.json --ragas evals/out/ragas.json"
+          else
+            echo "No file that the answers depend on changed: the judged suite was skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python -m evals.gate $args
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-gate-reports
+          path: evals/out/*.json

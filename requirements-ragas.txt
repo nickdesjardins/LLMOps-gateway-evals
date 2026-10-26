@@ -1,0 +1,6 @@
+# Ragas runs in an environment of its own: it pins the openai SDK below 2 (the service uses 3)
+# and brings LangChain. evals/score_ragas.py imports nothing from app/ for that reason.
+# langchain-community is held at 0.3.31: ragas 0.4.3 imports a module that 0.4 removed.
+ragas==0.4.3
+langchain-community==0.3.31
+fastembed==0.9.0               # the same local embedding model, for answer relevancy

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Served by the gateway itself: scripts, styles and API calls all stay on this origin. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <title>LLMOps Gateway Playground</title>
+  <meta name="description" content="Ask the gateway a question and watch what it does: semantic cache lookup, complexity routing, model failover, streaming, tokens and cost per request.">
+  <link rel="icon" href="/playground/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/playground/assets/app.css">
+  <script src="/playground/assets/theme.js"></script>
+  <script src="/playground/assets/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#ask">Skip to the question box</a>
+
+<header class="topbar">
+  <div class="wrap topbar__row">
+    <a class="brand" href="/">
+      <svg class="brand__mark" viewBox="0 0 26 26" aria-hidden="true"><rect class="bg" width="26" height="26" rx="7"/><path class="ln" d="M4 13h7"/><rect class="pt" x="11" y="6" width="3.2" height="14" rx="1.6"/><path class="ln" d="M14.2 13l7-5M14.2 13l7 5"/><circle class="dot" cx="7.5" cy="19.5" r="2.2"/></svg>
+      <span>LLMOps Gateway</span>
+    </a>
+    <nav class="topbar__nav" aria-label="On this page">
+      <a href="#ask">Ask</a>
+      <a href="#trace">Trace</a>
+      <a href="#metrics">Metrics</a>
+      <a href="#lab">Similarity lab</a>
+    </nav>
+    <span class="chip-link" id="provider-chip"><span class="dotmark" aria-hidden="true"></span><span id="provider-words">Connecting</span></span>
+    <button class="iconbtn" id="theme-toggle" type="button" aria-label="Switch between light and dark theme">
+      <svg class="icon theme-icon--light" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 0 1 9.8 4a8 8 0 1 0 10.2 10.2z"/></svg>
+      <svg class="icon theme-icon--dark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="banner" id="offline-banner" hidden>Offline provider: no model is called. Answers quote the best retrieved passage, so the cache, the router, the trace and the costs can be seen without a key.</p>
+
+  <section class="grid" id="ask" aria-labelledby="ask-title">
+    <div class="card">
+      <h1 id="ask-title" class="card__title">Ask the help desk</h1>
+      <p class="muted small">The knowledge base is the policy handbook of a fictional company (expenses, travel, security, records, leave, IT, suppliers). Ask the same thing twice, in other words, and watch the second answer come from the cache.</p>
+      <label class="label" for="question">Question</label>
+      <textarea id="question" rows="3" maxlength="500" placeholder="How many vacation days do full-time employees get each year?"></textarea>
+      <div class="samples" id="samples" aria-label="Sample questions"></div>
+      <div class="controls">
+        <label class="toggle"><input type="checkbox" id="stream" checked> Stream (Server-Sent Events)</label>
+        <label class="toggle"><span>Cache</span>
+          <select id="cache-mode">
+            <option value="use">use</option>
+            <option value="bypass">bypass</option>
+            <option value="refresh">refresh</option>
+          </select>
+        </label>
+        <button class="btn btn--primary" id="ask-button" type="button">Ask</button>
+      </div>
+      <p class="status" id="status" role="status"></p>
+      <div class="answer" id="answer" aria-live="polite" hidden>
+        <div class="answer__head"><span class="badge" id="answer-badge"></span><span class="muted small" id="answer-meta"></span></div>
+        <p class="answer__text" id="answer-text"></p>
+        <ul class="citations" id="citations"></ul>
+      </div>
+    </div>
+
+    <aside class="card side" aria-labelledby="did-title">
+      <h2 id="did-title" class="card__title">What the gateway did</h2>
+      <p class="muted small" id="did-empty">Ask a question: every step of its trace shows up here.</p>
+      <dl class="facts" id="did" hidden>
+        <dt>Cache</dt><dd id="did-cache"></dd>
+        <dt>Similarity</dt><dd><div class="gauge" id="gauge" aria-hidden="true"><span class="gauge__bar" id="gauge-bar"></span><span class="gauge__mark" id="gauge-mark"></span></div><span id="did-similarity"></span></dd>
+        <dt>Router</dt><dd id="did-route"></dd>
+        <dt>Model</dt><dd id="did-model"></dd>
+        <dt>Tokens</dt><dd id="did-tokens"></dd>
+        <dt>Cost</dt><dd id="did-cost"></dd>
+        <dt>Latency</dt><dd id="did-latency"></dd>
+        <dt>Guard</dt><dd id="did-guard"></dd>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="card" id="trace" aria-labelledby="trace-title">
+    <div class="section__head"><h2 id="trace-title" class="card__title">Trace</h2><span class="muted small" id="trace-id"></span></div>
+    <p class="muted small" id="trace-empty">The spans of the last request, on one time axis. The same spans go to Langfuse when its keys are set.</p>
+    <ol class="waterfall" id="waterfall"></ol>
+  </section>
+
+  <section class="card" id="metrics" aria-labelledby="metrics-title">
+    <div class="section__head"><h2 id="metrics-title" class="card__title">Since this instance started</h2><span class="muted small" id="metrics-since"></span></div>
+    <ul class="tiles" id="tiles">
+      <li class="tile"><strong id="m-requests">-</strong><span>requests</span></li>
+      <li class="tile"><strong id="m-hit-rate">-</strong><span>cache hit rate</span></li>
+      <li class="tile"><strong id="m-hit-p95">-</strong><span>p95 latency of a hit</span></li>
+      <li class="tile"><strong id="m-miss-p95">-</strong><span>p95 latency of a miss</span></li>
+      <li class="tile"><strong id="m-reduction">-</strong><span>list-price cost the cache avoided</span></li>
+      <li class="tile"><strong id="m-fallback">-</strong><span>misses answered after a failover</span></li>
+    </ul>
+    <p class="footnote" id="metrics-note">Percentiles over the requests this instance has served since it started; a free instance restarts when it sleeps.</p>
+  </section>
+
+  <section class="card" id="lab" aria-labelledby="lab-title">
+    <h2 id="lab-title" class="card__title">Similarity lab</h2>
+    <p class="muted small">How similar does the cache think two questions are? No model is called: only the embedding model and the contrast guard.</p>
+    <div class="lab">
+      <input type="text" id="lab-a" maxlength="500" value="What is the daily meal limit when travelling domestically?" aria-label="First question">
+      <input type="text" id="lab-b" maxlength="500" value="What is the daily meal limit when travelling internationally?" aria-label="Second question">
+      <button class="btn" id="lab-button" type="button">Compare</button>
+    </div>
+    <p class="lab__result" id="lab-result" role="status"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__row">
+    <span>Phase 4 of an Applied AI portfolio: semantic caching, routing, tracing, evaluation in CI.</span>
+    <span><a href="https://nickdesjardins.github.io/production-LLMOps-gateway-evals/">Project page</a> · <a href="https://github.com/nickdesjardins/production-LLMOps-gateway-evals">Code on GitHub</a></span>
+  </div>
+</footer>
+</body>
+</html>
