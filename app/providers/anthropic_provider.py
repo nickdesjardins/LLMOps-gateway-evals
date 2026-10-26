@@ -26,7 +26,7 @@ from typing import Any
 import anthropic
 
 from app.pricing import Usage
-from app.providers.base import ChatRequest, Completion, ProviderError, StreamEvent
+from app.providers.base import ChatRequest, Completion, ProviderError, StreamEvent, provider_message
 
 #: Models that take the server-side refusal fallback. Claude Haiku 5.5 has none.
 SERVER_FALLBACK_MODELS = frozenset({"claude-opus-5-5", "claude-sonnet-5-5"})
@@ -94,21 +94,34 @@ class AnthropicProvider:
         return self._client.beta.messages if model in SERVER_FALLBACK_MODELS else self._client.messages
 
     def _error(self, model: str, exc: Exception) -> ProviderError:
-        if isinstance(exc, anthropic.AuthenticationError | anthropic.PermissionDeniedError):
+        said = provider_message(exc)
+        if isinstance(exc, anthropic.AuthenticationError):
             return ProviderError(
-                model, "auth", f"the key was refused ({exc.status_code})", status=exc.status_code
+                model, "auth", "the key was refused (401)", status=401, provider_message=said
+            )
+        if isinstance(exc, anthropic.PermissionDeniedError):
+            return ProviderError(
+                model, "forbidden", "refused for this account (403)", status=403, provider_message=said
             )
         if isinstance(exc, anthropic.RateLimitError):
-            return ProviderError(model, "rate_limited", "rate limited (429)", status=429)
+            return ProviderError(
+                model, "rate_limited", "rate limited (429)", status=429, provider_message=said
+            )
         if isinstance(exc, anthropic.NotFoundError):
-            return ProviderError(model, "not_found", "model not found (404)", status=404)
+            return ProviderError(
+                model, "not_found", "model not found (404)", status=404, provider_message=said
+            )
         if isinstance(exc, anthropic.BadRequestError):
-            return ProviderError(model, "bad_request", "request rejected (400)", status=400)
+            return ProviderError(
+                model, "bad_request", "request rejected (400)", status=400, provider_message=said
+            )
         if isinstance(exc, anthropic.APITimeoutError):
             return ProviderError(model, "timeout", "timed out")
         if isinstance(exc, anthropic.APIStatusError):
             kind = "upstream" if exc.status_code >= 500 or exc.status_code == 408 else "bad_request"
-            return ProviderError(model, kind, f"HTTP {exc.status_code}", status=exc.status_code)
+            return ProviderError(
+                model, kind, f"HTTP {exc.status_code}", status=exc.status_code, provider_message=said
+            )
         if isinstance(exc, anthropic.APIConnectionError):
             return ProviderError(model, "upstream", "connection error")
         return ProviderError(model, "upstream", type(exc).__name__)

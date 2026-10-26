@@ -61,6 +61,17 @@ def gone(model: str) -> ProviderError:
     return ProviderError(model, "not_found", "model not found (404)", status=404)
 
 
+def harness_only(model: str) -> ProviderError:
+    """OpenRouter's 403 for a free model kept for agentic harnesses (inkling, 26 October 2026)."""
+    return ProviderError(
+        model,
+        "forbidden",
+        "refused for this account (403)",
+        status=403,
+        provider_message=f"{model} is only available on agentic harnesses.",
+    )
+
+
 # ------------------------------------------------------------------------ the cases
 
 
@@ -112,6 +123,38 @@ async def test_a_404_stops_the_test_of_that_model() -> None:
     provider = Script({"gone/model:free": gone("gone/model:free")})
     report = await try_model(provider, "gone/model:free", pace=Pacer(0))
     assert report.unreachable and report.verdict == "unreachable" and len(provider.calls) == 1
+
+
+async def test_a_403_makes_that_model_unreachable_and_says_why() -> None:
+    provider = Script({"closed/model:free": harness_only("closed/model:free")})
+    report = await try_model(provider, "closed/model:free", pace=Pacer(0))
+    assert report.verdict == "unreachable" and len(provider.calls) == 1
+    result = report.results[0]
+    assert result.failure == "forbidden" and result.why == "refused for this account (403)"
+    assert result.provider_said == "closed/model:free is only available on agentic harnesses."
+    # served by /api/v1/models and published in chain.json: the provider's words stay out
+    assert "provider_said" not in result.as_dict() and "agentic" not in json.dumps(report.as_dict())
+
+
+def closed_report(model: str, kind: str = "forbidden") -> ModelReport:
+    return ModelReport(model, [CaseResult("grounded", "unreachable", 0.1, f"{kind} said so", kind)])
+
+
+def test_one_model_s_403_is_not_a_refused_key() -> None:
+    # the Model check of 26 October 2026 failed here: two of 17 models answered 403
+    reports = [report("good/a:free"), closed_report("thinkingmachines/inkling:free"), report("good/b:free")]
+    assert rules.key_refused(reports) is None
+
+
+def test_a_401_or_a_403_from_every_model_is_a_refused_key() -> None:
+    assert rules.key_refused([report("good/a:free"), closed_report("x/y:free", "auth")]) == (
+        "OpenRouter refused the key (auth said so)"
+    )
+    every = [closed_report("x/a:free"), closed_report("x/b:free")]
+    assert rules.key_refused(every) == (
+        "OpenRouter refused every model with a 403, so the key itself is closed (forbidden said so)"
+    )
+    assert rules.key_refused([]) is None
 
 
 async def test_a_rate_limit_leaves_the_model_not_judged() -> None:
@@ -313,6 +356,60 @@ async def test_a_failing_listed_model_is_probed_benched_and_replaced(tmp_path: A
     assert chooser.last_test is not None and chooser.origin["source"] == "repaired here"
     saved = json.loads((tmp_path / "model_cache.json").read_text(encoding="utf-8"))
     assert broken in saved["benched"]
+
+
+async def test_a_403_on_a_real_request_is_probed_and_benched_like_a_404(tmp_path: Any) -> None:
+    settings = automatic(tmp_path)
+    closed = settings.chain("light")[0]
+    provider = Script({closed: harness_only(closed)})
+    listed = [*settings.chain("light"), *settings.chain("heavy")]
+    chooser = ModelChooser(settings, provider, list_free=lambda: listed)
+    chooser.note([Attempt(closed, "light", "forbidden", "refused for this account (403)")])
+    await chooser.wait()
+    assert closed in chooser.benched and closed not in chooser.chains["light"]
+
+
+async def test_a_403_from_every_model_is_the_key_and_benches_nothing(tmp_path: Any) -> None:
+    # a spent key budget: OpenRouter answers 403 to every model, so no model is to blame
+    settings = automatic(tmp_path)
+    light, heavy = settings.chain("light"), settings.chain("heavy")
+    everyone = [*light, *heavy, "new/candidate:free"]
+    provider = Script({m: harness_only(m) for m in everyone})
+    chooser = ModelChooser(settings, provider, list_free=lambda: everyone)
+    chooser.note([Attempt(m, "light", "forbidden", "403") for m in [*light, *heavy]])
+    await chooser.wait()
+    assert provider.calls == [] and chooser.benched == {}  # not even looked into
+    benched = await chooser.look(light)  # two probes, both refused: still the key
+    assert benched == [] and chooser.benched == {} and chooser.chains["light"] == light
+
+
+async def test_benching_never_empties_a_chain(tmp_path: Any) -> None:
+    settings = automatic(tmp_path)
+    light = settings.chain("light")
+    chooser = ModelChooser(settings, Script(), list_free=lambda: [])
+    chooser.chains["light"][:] = light[:1]
+    assert await chooser.look(light[:1]) == light[:1]  # unlisted: benched, but kept (rule 4)
+    assert chooser.chains["light"] == light[:1]
+
+
+async def test_candidates_that_all_refuse_are_not_benched(tmp_path: Any) -> None:
+    settings = automatic(tmp_path)
+    candidates = ["new/a:free", "new/b:free", "new/c:free"]
+    listed = [*settings.chain("light"), *settings.chain("heavy"), *candidates]
+    provider = Script({m: harness_only(m) for m in candidates})
+    chooser = ModelChooser(settings, provider, list_free=lambda: listed)
+    assert len(chooser.chains["light"]) < rules.PLACES  # a free place to fill
+    assert await chooser.repair(reason="test") is None
+    assert not any(m in chooser.benched for m in candidates)
+
+
+def test_the_key_record_says_when_it_is_a_management_key() -> None:
+    from app.models.catalogue import allowance
+
+    record = allowance(
+        "https://x.invalid/api/v1", "k", fetch=lambda url, headers: {"data": {"is_management_key": True}}
+    )
+    assert record["is_management_key"] is True
 
 
 async def test_a_rate_limit_is_not_looked_into(tmp_path: Any) -> None:

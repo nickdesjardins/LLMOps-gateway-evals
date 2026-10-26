@@ -41,7 +41,7 @@ PUBLISHED_URL = (
     "https://raw.githubusercontent.com/nickdesjardins/LLMOps-gateway-evals/tested-models/chain.json"
 )
 FREE_ID = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}/[a-z0-9][a-z0-9._-]{0,95}:free")
-#: A judge model that answered 404 or 400 this many times gets no more requests for the rest of
+#: A judge model that answered 404, 400 or 403 this many times gets no more requests for the rest of
 #: the run (it cannot be called from this account), as in evals/judge.py.
 BENCH_AFTER = 2
 
@@ -137,11 +137,11 @@ def build_metrics(model: str, pacer: Pacer, embeddings: Any) -> dict[str, Any]:
 
 
 def cannot_be_called(exc: BaseException | None) -> bool:
-    """True when the error, or one it wraps, is an HTTP 404 or 400 from the provider."""
+    """True when the error, or one it wraps, is an HTTP 404, 400 or 403 from the provider."""
     for _ in range(6):
         if exc is None:
             return False
-        if getattr(exc, "status_code", None) in (400, 404):
+        if getattr(exc, "status_code", None) in (400, 403, 404):
             return True
         exc = exc.__cause__ or exc.__context__
     return False

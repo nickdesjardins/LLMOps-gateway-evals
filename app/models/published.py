@@ -32,6 +32,7 @@ import hashlib
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -227,7 +228,17 @@ async def _main(args: argparse.Namespace) -> int:
         if unlisted and previous is None:
             return _fail(f"no key, and default models are no longer listed: {', '.join(unlisted)}")
         return 0
-    left = allowance(base, key).get("remaining_today")
+    try:
+        account = allowance(base, key)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 401:
+            return _fail(
+                "OpenRouter refused the key (401 on GET /api/v1/key): replace the OPENROUTER_API_KEY secret"
+            )
+        return _fail(f"OpenRouter's record of the key could not be read (HTTP {exc.code})")
+    if account.get("is_management_key"):
+        return _fail("OPENROUTER_API_KEY is a management key, which cannot call a model: make a regular key")
+    left = account.get("remaining_today")
     to_test = list(
         dict.fromkeys([m for chain in current.values() for m in chain if m in free_list] + free_list)
     )
@@ -240,8 +251,9 @@ async def _main(args: argparse.Namespace) -> int:
     provider = build_provider(Settings(_env_file=None, llm_provider="openrouter", openrouter_api_key=key))
     reports = await run_test(provider, to_test, seconds_between_starts=args.pace_s)
     await provider.aclose()
-    if any(r.results and r.results[0].failure == "auth" for r in reports):
-        return _fail("OpenRouter refused the key")
+    refused = rules.key_refused(reports)
+    if refused:
+        return _fail(refused)
     by_model = {r.model: r for r in reports}
     unlisted = {m for chain in current.values() for m in chain if m not in free_list}
     chains: dict[Role, list[str]] = {}
@@ -257,9 +269,12 @@ async def _main(args: argparse.Namespace) -> int:
             f"{role}: {', '.join(chains[role])} ({', '.join(f'{m} {p}' for m, p in placings[role].items())})"
         )
     for report in reports:
-        _summary(
-            f"- {report.model}: {report.verdict}, roles {', '.join(report.roles()) or 'none'}, median {report.median_s} s"
-        )
+        line = f"- {report.model}: {report.verdict}, roles {', '.join(report.roles()) or 'none'}, median {report.median_s} s"
+        closed = next((r for r in report.results if r.outcome == "unreachable"), None)
+        if closed:
+            said = f"; OpenRouter said: {closed.provider_said}" if closed.provider_said else ""
+            line += f" ({closed.failure}: {closed.why}{said})"
+        _summary(line)
     failing = {role: rules.members_failing(current[role], by_model, role) for role in ROLES}
     if not confirmed:
         return _fail("a role has no model that passed its cases; the chains are published unconfirmed")

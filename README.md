@@ -18,7 +18,7 @@ has to answer before a generative feature goes to production:
 | | |
 |---|---|
 | Project page (recorded requests, the measured threshold trade-off) | <https://nickdesjardins.github.io/LLMOps-gateway-evals/> |
-| Live demo (free hosting: sleeps, about a minute to wake) | not online yet: see [docs/DEPLOY.md](docs/DEPLOY.md) |
+| Live demo (free hosting: sleeps, about a minute to wake) | <https://llmops-gateway-q68n.onrender.com/> |
 | How it is deployed | [docs/DEPLOY.md](docs/DEPLOY.md) |
 
 Phase 4 of an Applied AI portfolio. Phase 1:
@@ -251,7 +251,8 @@ chain. Every attempt is a generation span in the trace, failed ones included.
 | 400 (this model's endpoint refused the request's shape) | next model, after one retry without OpenRouter's extensions |
 | empty answer, cut off before any text (a model that thinks first), refusal | next model |
 | an answer that fails validation (no citation, a citation to a passage that was not given) | next model |
-| 401 / 403 | stop: every model of the provider shares the key (502) |
+| 403 (this model is closed to the account: OpenRouter keeps some free models for "agentic harnesses", a provider's terms, a moderation flag) | next model; OpenRouter's own words go to the log |
+| 401 | stop: every model of the provider shares the key (502) |
 | `REQUEST_DEADLINE_S` reached | stop (503, `Retry-After: 10`) |
 | every model failed | 503 with `Retry-After` when any failure was transient, 502 when all were permanent |
 
@@ -286,8 +287,8 @@ this gateway's own work, through the real prompt, ceilings and validation:
 | `judge` | A DeepEval-style verdict task: two claims, one context | JSON with one verdict per claim: yes, then no |
 
 Light needs `grounded` and `refusal` and a median answer under 12 s; heavy needs those and
-`synthesis`; the eval judge needs `judge`. A 404 or 400 makes a model *unreachable* (its test
-stops there); a 429, a timeout or an upstream error leaves it *not judged*: the moment, not the
+`synthesis`; the eval judge needs `judge`. A 404, 400 or 403 makes a model *unreachable* (its
+test stops there); a 429, a timeout or an upstream error leaves it *not judged*: the moment, not the
 model.
 
 **The measured defaults** (26 October 2026, `benchmarks/2026-10-26/`, every answer saved). Of
@@ -304,8 +305,9 @@ the 17 free models OpenRouter listed, six passed all four cases:
 
 Each chain spans two upstream vendors. The judge chain starts with a model that writes none of
 the answers, so the judge does not grade its own work. Both Google models were rate limited on
-every call that day (not judged), and `nemotron-3-super` and the two `thinkingmachines/inkling`
-models were unreachable. `python -m app.models.testing --all` measures again (about four free
+every call that day (not judged), and `nemotron-3-super` (404) and the two
+`thinkingmachines/inkling` models were unreachable (403: OpenRouter answers "only available on
+agentic harnesses" to everyone else). `python -m app.models.testing --all` measures again (about four free
 requests per model).
 
 **Repair, never rank** (`app/models/rules.py`, pure functions):
@@ -313,7 +315,7 @@ requests per model).
 1. A model in a chain keeps its place and its order whatever one test says about its answers:
    four cases can rule a model out, they cannot rank two models that both pass.
 2. A model leaves only on evidence that it cannot be called: OpenRouter no longer lists it, or a
-   404 or 400 on a real request followed by the same answer to a probe.
+   404, 400 or 403 on a real request followed by the same answer to a probe.
 3. A free place goes to a model that passed every case its role needs, behind the models
    already there, in the order a person chose (`PREFERENCE`), then by speed. At most three
    models per chain.
@@ -323,7 +325,7 @@ requests per model).
 **While the service runs** (`app/models/chooser.py`). Starting calls no model: the chains start
 from the measured defaults, then `model_cache.json` (this machine's last choice, never
 committed), then the published file if its test is newer. After a request, the cascade reports
-every attempt. A 429 or a timeout is left alone. A 404 or 400 is looked into in the
+every attempt. A 429 or a timeout is left alone. A 404, 400 or 403 is looked into in the
 background, at most once a minute per model: the published file is read again, OpenRouter's
 list is checked, and the model is probed once with the `grounded` case. A model that is
 unlisted, or fails the probe the same way, is **benched** at once (the next request no longer
@@ -524,8 +526,8 @@ required status check and a failing gate disables the merge button (docs/DEPLOY.
 **The judge.** A small free model is a noisy judge. The thresholds are the specification's;
 whether a free judge holds the pipeline to them without false alarms was measured, not
 assumed. The first runs (26 October 2026) found three faults in how the judging was done, not
-in the answers, and each was fixed and kept: a judge model that answers 404 or 400 twice
-stops getting requests; a flagged case is judged again by the next model before it counts; and
+in the answers, and each was fixed and kept: a judge model that answers 404, 400 or 403
+twice stops getting requests; a flagged case is judged again by the next model before it counts; and
 DeepEval's claim step reads the question, without which two different judges scored the
 correct "14 characters [S1]" 0.0 (a control with "12 characters" still scores 0.0). One
 false alarm remained (above). `EVAL_JUDGE_PROVIDER=anthropic` with

@@ -6,8 +6,8 @@ The rules, in four sentences (the same as the Phase 1 and Phase 3 services):
    says about its answers: four cases can rule a model out, they cannot rank two models that
    both pass, and free models are rate limited in bursts.
 2. **A model leaves only on evidence that it cannot be called**: OpenRouter no longer lists it,
-   or a call to it from this account answered 404 or 400 twice (a real request, then a probe or
-   a test). A rate limit or a timeout is the moment, not the model.
+   or a call to it from this account answered 404, 400 or 403 twice (a real request, then a
+   probe or a test). A rate limit or a timeout is the moment, not the model.
 3. **A free place goes to a model that passed** every case its role needs, behind the models
    already there, in the order a person chose (:data:`PREFERENCE`), then by speed.
 4. **A chain is never emptied**: when nothing is left that can be called, the old chain stays
@@ -22,7 +22,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 
 from app.models.cases import Role
-from app.models.testing import ModelReport
+from app.models.testing import CaseResult, ModelReport
 
 #: Models in a chain, at most: two like the measured default, and one spare.
 PLACES = 3
@@ -88,6 +88,29 @@ def repair(
         # Never empty a chain: the old one stays, and whoever reads the record is told.
         return list(chain), {model: "kept (nothing could replace it)" for model in chain}
     return kept, placings
+
+
+def key_refused(reports: Iterable[ModelReport]) -> str | None:
+    """Why OpenRouter refused the key itself, or None.
+
+    A 401 is about the key. A 403 usually is not: OpenRouter keeps some free models for
+    "agentic harnesses" and answers 403 to everyone else (``thinkingmachines/inkling:free`` on
+    26 October 2026), and a provider's terms can rule an account out of one model. Such a model
+    is unreachable, and a test goes on without it. Only when every model answered its first
+    call with a 403 is the key itself closed (a spent budget, a guardrail): then no model is to
+    blame, and none may be benched for it.
+    """
+    first = [report.results[0] for report in reports if report.results]
+
+    def said(result: CaseResult) -> str:
+        return f"{result.why}: {result.provider_said}" if result.provider_said else result.why
+
+    for result in first:
+        if result.failure == "auth":
+            return f"OpenRouter refused the key ({said(result)})"
+    if first and all(result.failure in {"auth", "forbidden"} for result in first):
+        return f"OpenRouter refused every model with a 403, so the key itself is closed ({said(first[0])})"
+    return None
 
 
 def members_failing(chain: Sequence[str], reports: Mapping[str, ModelReport], role: Role) -> list[str]:

@@ -28,7 +28,8 @@ What the two passes say together:
 | `liquid/lfm-2.5-2.6b:free`, `xingchen-agi/xing4.0-29b-a4b:free` | 429 | 429 | | right | | judge only (rate limited) |
 | `poolside/laguna-s-2.1:free` | right (pass 1) | 429 | wrong (no citation) | right | | judge only |
 | `google/gemma-4-26b-a4b-it:free`, `google/gemma-4-31b-it:free` | 429 | 429 | 429 | 429 | | not judged |
-| `nvidia/nemotron-3-super-120b-a12b:free`, `thinkingmachines/inkling:free`, `thinkingmachines/inkling-small:free` | 404 | | | | | unreachable from this account |
+| `nvidia/nemotron-3-super-120b-a12b:free` | 404 | | | | | unreachable from this account |
+| `thinkingmachines/inkling:free`, `thinkingmachines/inkling-small:free` | 403 | | | | | unreachable: "only available on agentic harnesses" (recorded as `auth` that day; a 403 is `forbidden` since) |
 | `nvidia/nemotron-3.5-content-safety:free` | wrong | wrong | wrong | wrong | | failed (a safety classifier, not a chat model) |
 
 The defaults chosen from it, and why, are in `app/config.py` and in the README, "Free models

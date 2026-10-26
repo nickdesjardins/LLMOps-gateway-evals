@@ -6,9 +6,10 @@ that model alone), and grades what comes back. Request starts are kept
 ``seconds_between_starts`` apart, so a test never crowds out a visitor.
 
 A call that OpenRouter turned away (a rate limit, a timeout, an upstream error) leaves the model
-*not judged*: that says something about the moment, nothing about the model. A 404 or a 400
-means the model cannot be called from this account today: the model *failed*, and its test
-stops there so no call is spent on it. A wrong or unusable answer also fails the case.
+*not judged*: that says something about the moment, nothing about the model. A 404, a 400 or a
+403 means the model cannot be called from this account today: the model *failed*, and its test
+stops there so no call is spent on it (OpenRouter answers 403 for a model it keeps for
+"agentic harnesses", or one whose provider's terms rule this account out). A wrong or unusable answer also fails the case.
 
 Usable as a command, to measure every free model OpenRouter lists (about four free requests per
 model) and save every answer::
@@ -38,7 +39,7 @@ STAMP = "%Y-%m-%dT%H:%M:%SZ"
 #: A light model must answer quickly: its usual answer may take at most this long.
 LIGHT_MAX_MEDIAN_S = 12.0
 #: Failure kinds after which the model is not worth another call today.
-PERMANENT = frozenset({"not_found", "bad_request", "auth"})
+PERMANENT = frozenset({"not_found", "bad_request", "forbidden", "auth"})
 #: Failure kinds that judge the moment, not the model.
 TRANSIENT = frozenset({"rate_limited", "timeout", "upstream"})
 
@@ -46,15 +47,20 @@ TRANSIENT = frozenset({"rate_limited", "timeout", "upstream"})
 @dataclass
 class CaseResult:
     case_id: str
-    #: "right", "wrong", "no_answer" (transient), "unreachable" (404/400)
+    #: "right", "wrong", "no_answer" (transient), "unreachable" (404/400/403, or 401: the key)
     outcome: str
     seconds: float | None = None
     why: str = ""
     failure: str | None = None
     answer: str = ""
+    #: The provider's own words on a failed call: for logs and the Model check summary only,
+    #: never in :meth:`as_dict` (served by ``/api/v1/models``, published in ``chain.json``).
+    provider_said: str = ""
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        data = asdict(self)
+        data.pop("provider_said")
+        return data
 
 
 @dataclass
@@ -157,7 +163,16 @@ async def try_model(
         except ProviderError as exc:
             seconds = round(time.perf_counter() - started, 2)
             if exc.kind in PERMANENT:
-                report.results.append(CaseResult(case.case_id, "unreachable", seconds, exc.detail, exc.kind))
+                report.results.append(
+                    CaseResult(
+                        case.case_id,
+                        "unreachable",
+                        seconds,
+                        exc.detail,
+                        exc.kind,
+                        provider_said=exc.provider_message or "",
+                    )
+                )
                 break  # this model cannot be called from this account: stop spending on it
             outcome = "no_answer" if exc.kind in TRANSIENT else "wrong"
             report.results.append(CaseResult(case.case_id, outcome, seconds, exc.detail, exc.kind))

@@ -10,11 +10,11 @@ providers are *fixed*: their models are paid and named by the operator.
 (:mod:`app.models.published`) if its test is newer still.
 
 **After a request a model could not answer** (the cascade reports every attempt): rate limits,
-timeouts and upstream errors are the moment, not the model, and nothing happens. A 404 or a 400
-is looked into in the background, at most once a minute per model: the published file is read
+timeouts and upstream errors are the moment, not the model, and nothing happens. A 404, a 400
+or a 403 is looked into in the background, at most once a minute per model: the published file is read
 again (a repair may already be waiting there), OpenRouter's list is checked, and the model is
 probed once with the ``grounded`` case. A model OpenRouter no longer lists, or that answers the
-probe with a 404 or 400 again, is **benched**: taken out of every chain at once. Its place is
+probe with a 404, 400 or 403 again, is **benched**: taken out of every chain at once. Its place is
 filled by a test of up to three free models that are in no chain, with this project's cases
 (:mod:`app.models.cases`), by the rules of :mod:`app.models.rules`: repair, never rank. Tests
 started by the service are at least 15 minutes apart, and in demo mode they are paid from the
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 TIERS: tuple[Tier, ...] = ("light", "heavy")
 #: Failure kinds worth a look: the model may be gone, or closed to this account.
-LOOK_AT = frozenset({"not_found", "bad_request"})
+LOOK_AT = frozenset({"not_found", "bad_request", "forbidden"})
 LOOK_EVERY_S = 60.0
 
 
@@ -211,6 +211,12 @@ class ModelChooser:
         if self.mode != "automatic":
             return
         now = self._clock()
+        if len(attempts) > 1 and all(a.outcome in {"forbidden", "auth"} for a in attempts):
+            logger.warning(
+                "Every model answered 403: the key itself is closed (a spent budget, a guardrail); "
+                "nothing benched"
+            )
+            return
         suspects = []
         for attempt in attempts:
             if attempt.outcome in LOOK_AT and attempt.model not in self.benched:
@@ -237,21 +243,32 @@ class ModelChooser:
                     "OpenRouter's model list could not be read (%s); nothing benched", type(exc).__name__
                 )
                 return []
-            benched = []
+            verdicts: dict[str, str] = {}
+            probes = []
             for model in models:
                 if model not in listed:
-                    why = "OpenRouter no longer lists it"
-                else:
-                    report = await self._probe(model)
-                    if report is None or not report.unreachable:
-                        continue
-                    why = f"a probe failed again ({report.results[0].failure}: {report.results[0].why})"
+                    verdicts[model] = "OpenRouter no longer lists it"
+                    continue
+                report = await self._probe(model)
+                if report is None or not report.unreachable:
+                    continue
+                probes.append(report)
+                first = report.results[0]
+                said = f"; OpenRouter said: {first.provider_said}" if first.provider_said else ""
+                verdicts[model] = f"a probe could not reach it either ({first.failure}: {first.why}{said})"
+            refused = rules.key_refused(probes) if len(probes) > 1 else None
+            if refused:  # every probe refused: the key, not the models
+                logger.warning("%s; nothing benched", refused)
+                verdicts = {m: why for m, why in verdicts.items() if why.startswith("OpenRouter no longer")}
+            benched = []
+            for model, why in verdicts.items():
                 self.benched[model] = _stamp(datetime.now(UTC))
-                for tier in TIERS:
-                    if self._managed(tier) and model in self.chains[tier]:
-                        self.chains[tier].remove(model)
-                if model in self.judge:
-                    self.judge.remove(model)
+                for chain in [*(self.chains[t] for t in TIERS if self._managed(t)), self.judge]:
+                    if model in chain:
+                        if len(chain) > 1:
+                            chain.remove(model)
+                        else:  # rule 4: a chain is never emptied
+                            logger.warning("Kept %s: it is the last model of its chain", model)
                 benched.append(model)
                 logger.warning("Benched %s: %s", model, why)
             if benched:
@@ -304,6 +321,10 @@ class ModelChooser:
             )
         except Exception as exc:
             logger.info("The test stopped (%s)", type(exc).__name__)
+            return None
+        refused = rules.key_refused(reports)
+        if refused:  # every candidate refused: the key, not the models
+            logger.warning("%s; no candidate benched", refused)
             return None
         by_model = {r.model: r for r in reports}
         for report in reports:

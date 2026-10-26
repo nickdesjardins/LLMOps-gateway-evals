@@ -2,9 +2,11 @@
 
 Sends one grounded question to each model of the light and the heavy chain (4 free requests with
 the default chains), directly, without the cascade, and prints for each: answered or the failure
-kind, latency, tokens, and whether the answer was cut off at the tier's ceiling. A model that
-fails here would make every request fall over to the next one: replace it in ``LIGHT_MODELS`` /
-``HEAVY_MODELS`` (ids that end in ``:free`` from openrouter.ai/models).
+kind (with OpenRouter's own explanation when it gave one), latency, tokens, and whether the
+answer was cut off at the tier's ceiling. A model that fails here makes every request fall over
+to the next one: in automatic mode the service benches it and finds a replacement; with
+``LIGHT_MODELS`` / ``HEAVY_MODELS`` set, replace it there (ids that end in ``:free`` from
+openrouter.ai/models). Only a 401 means the key itself is wrong.
 
 Reads the key from ``.env`` / ``.env.local``; prints nothing secret.
 
@@ -48,7 +50,8 @@ async def main() -> int:
                 result = await provider.complete(model, request)
             except ProviderError as exc:
                 failures += 1
-                print(f"{tier:5s} {model}: FAILED ({exc.kind}: {exc.detail})")
+                said = f"; OpenRouter said: {exc.provider_message}" if exc.provider_message else ""
+                print(f"{tier:5s} {model}: FAILED ({exc.kind}: {exc.detail}{said})")
                 continue
             seconds = time.perf_counter() - started
             problem = citation_problem(result.text, 1)

@@ -68,4 +68,6 @@ def allowance(
         "is_free_tier": data.get("is_free_tier"),
         "remaining_today": free.get("remaining"),
         "limit_today": free.get("limit"),
+        # A management key reads this record but cannot call a model.
+        "is_management_key": data.get("is_management_key"),
     }

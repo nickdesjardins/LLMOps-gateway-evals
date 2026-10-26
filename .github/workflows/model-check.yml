@@ -19,8 +19,9 @@
 #   verdict  Turns the run red when the owner has something to do. The step "Decide, test, and
 #            write the file to publish" then ends with a line that begins "Failing this run on
 #            purpose:": a role has no model that passed, a model of a chain failed its cases (only
-#            a person reorders a chain), OpenRouter refused the key, the day's allowance is too
-#            low, or the published chains are over 14 days old. A red run without such a line
+#            a person reorders a chain), OpenRouter refused the key (a 401, or a 403 to every
+#            model: a 403 to some models only marks those models unreachable), the day's
+#            allowance is too low, or the published chains are over 14 days old. A red run without such a line
 #            means the job itself broke.
 #
 # Why testing and publishing are two jobs: the job that holds the key and runs downloaded

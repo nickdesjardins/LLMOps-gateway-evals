@@ -122,7 +122,7 @@ async def test_extensions_are_dropped_after_a_400_and_remembered() -> None:
         (429, "rate_limited"),
         (404, "not_found"),
         (401, "auth"),
-        (403, "auth"),
+        (403, "forbidden"),
         (500, "upstream"),
         (503, "upstream"),
         (422, "bad_request"),
@@ -135,6 +135,33 @@ async def test_http_errors_become_failure_kinds(status: int, kind: str) -> None:
     with pytest.raises(ProviderError) as caught:
         await provider.complete("m", REQUEST)
     assert caught.value.kind == kind and "secret detail" not in caught.value.detail
+
+
+async def test_openrouter_s_own_words_are_kept_for_the_log_with_keys_redacted() -> None:
+    said = "vendor/m:free is only available on agentic harnesses. Key sk-or-v1-0123456789abcdef, a@b.io"
+    provider = openai_provider(
+        "openrouter",
+        lambda request: httpx2.Response(403, json={"error": {"message": said, "code": 403, "metadata": {}}}),
+    )
+    with pytest.raises(ProviderError) as caught:
+        await provider.complete("vendor/m:free", REQUEST)
+    error = caught.value
+    assert error.kind == "forbidden" and error.status == 403
+    assert error.detail == "refused for this account (403)"  # the sentence a trace shows
+    assert error.provider_message is not None
+    assert error.provider_message.startswith("vendor/m:free is only available on agentic harnesses.")
+    assert "sk-or-v1" not in error.provider_message and "a@b.io" not in error.provider_message
+
+
+async def test_a_403_on_the_streaming_path_is_forbidden_too() -> None:
+    provider = openai_provider(
+        "openrouter",
+        lambda request: httpx2.Response(403, json={"error": {"message": "harnesses only", "code": 403}}),
+    )
+    with pytest.raises(ProviderError) as caught:
+        async for _ in provider.stream("vendor/m:free", REQUEST):
+            pass
+    assert caught.value.kind == "forbidden" and caught.value.provider_message == "harnesses only"
 
 
 async def test_openrouter_in_band_errors_and_empty_answers() -> None:
@@ -262,6 +289,18 @@ async def test_anthropic_refusals_and_errors() -> None:
     with pytest.raises(ProviderError) as caught:
         await limited.complete("claude-haiku-5-5", REQUEST)
     assert caught.value.kind == "rate_limited"
+    for status, kind, error_type in (
+        (401, "auth", "authentication_error"),
+        (403, "forbidden", "permission_error"),
+    ):
+        failing = anthropic_provider(
+            lambda r, s=status, e=error_type: httpx2.Response(
+                s, json={"type": "error", "error": {"type": e, "message": "not for this key"}}
+            )
+        )
+        with pytest.raises(ProviderError) as caught:
+            await failing.complete("claude-opus-5-5", REQUEST)
+        assert caught.value.kind == kind and caught.value.provider_message == "not for this key"
 
 
 def test_the_offline_provider_quotes_the_best_passage_or_refuses() -> None:

@@ -5,7 +5,7 @@ Pydantic class for the answer (claims, verdicts, statements). This class sends t
 through the same provider adapters the service uses (OpenRouter's free models by default,
 Claude, OpenAI or Gemini if configured), asks for a JSON object, parses it into the schema, and
 moves to the next judge model when a model fails or answers something that does not parse. A
-model that answered 404 or 400 twice gets no more requests for the rest of the run. DeepEval
+model that answered 404, 400 or 403 twice gets no more requests for the rest of the run. DeepEval
 then sees a model that always answers in schema, or an error it records.
 
 A judge is a model, and a small free model is a noisy judge: the gate's thresholds are set for
@@ -47,7 +47,7 @@ DEFAULT_JUDGES = {
 }
 #: Failure kinds that say a model cannot be called from this account (the service's rule 2,
 #: app/models/rules.py): twice, and the judge stops sending it requests for the rest of the run.
-BENCH_KINDS = frozenset({"not_found", "bad_request"})
+BENCH_KINDS = frozenset({"not_found", "bad_request", "forbidden"})
 BENCH_AFTER = 2
 
 
@@ -141,7 +141,7 @@ class GatewayJudge(DeepEvalBaseLLM):
         callable_models = [m for m in self.models if m not in self.benched]
         if not callable_models:
             raise RuntimeError(
-                f"every judge model answered 404 or 400 twice ({', '.join(self.benched)}): "
+                f"every judge model answered 404, 400 or 403 twice ({', '.join(self.benched)}): "
                 "blank EVAL_JUDGE_MODELS to use the published chain"
             )
         for model in callable_models:

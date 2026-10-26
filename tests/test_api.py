@@ -102,6 +102,46 @@ async def test_upstream_failure_is_a_503_with_retry_after() -> None:
     assert "rate limited" not in response.text  # the provider's own words stay in the log
 
 
+async def test_a_refused_key_is_a_502_whose_story_is_in_the_log_only(caplog: Any) -> None:
+    from app.providers.base import ProviderError
+
+    refused = ProviderError(
+        "light/a:free",
+        "auth",
+        "the key was refused (401)",
+        status=401,
+        provider_message="No auth credentials found",
+    )
+    client, _ = await client_for(provider=ScriptedProvider({"light/a:free": [refused]}))
+    with caplog.at_level("WARNING", logger="app.main"):
+        response = await client.post("/api/v1/ask", json={"question": QUESTION})
+    assert response.status_code == 502 and response.json()["error"]["type"] == "upstream_failed"
+    assert "No auth credentials" not in response.text and "light/a:free" not in response.text
+    logged = " ".join(r.getMessage() for r in caplog.records)
+    assert "light/a:free: auth: the key was refused (401)" in logged
+    assert "the provider said: No auth credentials found" in logged
+
+
+async def test_a_403_failover_keeps_the_provider_s_words_out_of_the_traces() -> None:
+    from app.providers.base import ProviderError
+
+    closed = ProviderError(
+        "light/a:free",
+        "forbidden",
+        "refused for this account (403)",
+        status=403,
+        provider_message="PROVIDER-TEXT only available on agentic harnesses",
+    )
+    client, _ = await client_for(provider=ScriptedProvider({"light/a:free": [closed]}))
+    response = await client.post("/api/v1/ask", json={"question": QUESTION})
+    assert response.status_code == 200 and "PROVIDER-TEXT" not in response.text
+    traces = await client.get("/api/v1/traces")
+    assert traces.status_code == 200 and "PROVIDER-TEXT" not in traces.text
+    assert "forbidden" in traces.text  # the kind is shown, the provider's words are not
+    models = await client.get("/api/v1/models")
+    assert "PROVIDER-TEXT" not in models.text
+
+
 async def test_without_a_provider_key_cache_hits_still_work() -> None:
     from app.components import build_components
     from app.embeddings import HashEmbedder

@@ -8,10 +8,11 @@ each SDK's exceptions into these kinds, so no other module ever imports an SDK e
 
 from __future__ import annotations
 
+import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from app.config import Tier
 from app.pricing import Usage
@@ -24,11 +25,34 @@ FailureKind = Literal[
     "bad_request",  # 400: this model or its endpoint refused the request's shape
     "invalid_output",  # empty, cut off before any text, or failed the caller's validation
     "refused",  # the model declined (a content filter, Anthropic's refusal stop reason)
-    "auth",  # 401/403: the key is wrong; every model of this provider shares it
+    "forbidden",  # 403: this model, provider or input is closed to this account; others may not be
+    "auth",  # 401: the key is wrong; every model of this provider shares it
 ]
 
-#: Kinds after which trying another model cannot help.
+#: Kinds after which trying another model cannot help. A 403 is not one of them: OpenRouter
+#: answers 403 for one model ("only available on agentic harnesses"), one provider's terms, a
+#: moderation flag on one input, as well as for a spent key budget, and only the first three
+#: leave the other models usable.
 FATAL_KINDS: frozenset[str] = frozenset({"auth"})
+
+_KEY_LIKE = re.compile(r"\b(?:sk|pk|rk)-[A-Za-z0-9_-]{6,}|\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+
+
+def provider_message(exc: BaseException, limit: int = 200) -> str | None:
+    """The provider's own explanation of an HTTP error, for the log only.
+
+    Taken from the SDK exception's JSON body (``error.message``), with anything shaped like a
+    key or an email address removed and cut to ``limit`` characters. Never shown to a client.
+    """
+    body: Any = getattr(exc, "body", None)
+    message: Any = None
+    if isinstance(body, dict):
+        inner = body.get("error")
+        message = inner.get("message") if isinstance(inner, dict) else body.get("message")
+    if not isinstance(message, str) or not message.strip():
+        return None
+    cleaned = _KEY_LIKE.sub("[redacted]", " ".join(message.split()))
+    return cleaned if len(cleaned) <= limit else cleaned[: limit - 3] + "..."
 
 
 class ProviderError(Exception):
@@ -42,12 +66,15 @@ class ProviderError(Exception):
         *,
         status: int | None = None,
         usage: Usage | None = None,
+        provider_message: str | None = None,
     ) -> None:
         super().__init__(f"{model}: {detail}")
         self.model = model
         self.kind = kind
         self.detail = detail
         self.status = status
+        #: The provider's own words (redacted, see :func:`provider_message`): logs only.
+        self.provider_message = provider_message
         #: Tokens the failed call still consumed (a truncated answer is billed).
         self.usage = usage or Usage()
 

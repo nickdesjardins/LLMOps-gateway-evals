@@ -55,6 +55,7 @@ def test_the_plan_is_the_tier_then_the_other_tier() -> None:
         ProviderError("l1:free", "upstream", "HTTP 502", status=502),
         ProviderError("l1:free", "not_found", "model not found (404)", status=404),
         ProviderError("l1:free", "bad_request", "rejected (400)", status=400),
+        ProviderError("l1:free", "forbidden", "refused for this account (403)", status=403),
         ProviderError("l1:free", "refused", "content filter"),
         ProviderError("l1:free", "invalid_output", "empty answer"),
     ],
@@ -94,6 +95,56 @@ async def test_a_bad_key_stops_the_cascade() -> None:
     with pytest.raises(UpstreamFailed, match="credentials"):
         await make(provider).complete(factory, trace(), tier="light")
     assert len(provider.calls) == 1
+
+
+async def test_a_403_closes_one_model_not_the_key(caplog: pytest.LogCaptureFixture) -> None:
+    # OpenRouter's answer for a free model kept for "agentic harnesses" (26 October 2026)
+    closed = ProviderError(
+        "l1:free",
+        "forbidden",
+        "refused for this account (403)",
+        status=403,
+        provider_message="l1:free is only available on agentic harnesses.",
+    )
+    provider = ScriptedProvider({"l1:free": [closed]})
+    t = trace()
+    with caplog.at_level("INFO", logger="app.routing.cascade"):
+        result = await make(provider).complete(factory, t, tier="light")
+    assert result.completion.model == "l2:free"
+    # OpenRouter's words reach the log, never a span (spans are served by /api/v1/traces)
+    assert "the provider said: l1:free is only available on agentic harnesses." in caplog.text
+    assert all("agentic" not in str(s.attributes) for s in t.generations)
+
+
+async def test_streaming_fails_over_after_a_403_too() -> None:
+    provider = ScriptedProvider(
+        {
+            "h1:free": [ProviderError("h1:free", "forbidden", "refused for this account (403)", status=403)],
+            "h2:free": [["Hello [S1]."]],
+        }
+    )
+    items = [item async for item in make(provider).stream(factory, trace(), tier="heavy")]
+    assert isinstance(items[-1], CascadeResult) and items[-1].completion.model == "h2:free"
+
+
+async def test_every_model_refusing_with_a_403_is_a_502() -> None:
+    closed = {
+        m: [ProviderError(m, "forbidden", "refused for this account (403)", status=403)]
+        for chain in CHAINS.values()
+        for m in chain
+    }
+    with pytest.raises(UpstreamFailed) as caught:
+        await make(ScriptedProvider(closed)).complete(factory, trace(), tier="light")
+    assert caught.value.status_code == 502 and "credentials" not in caught.value.message
+    assert caught.value.message == "No configured model could take this request."
+
+
+async def test_no_model_left_to_try_is_a_502_not_busy() -> None:
+    cascade = ModelCascade(
+        ScriptedProvider(), {"light": [], "heavy": []}, prices=PriceBook(), reference_models=REFS
+    )
+    with pytest.raises(UpstreamFailed):
+        await cascade.complete(factory, trace(), tier="light")
 
 
 async def test_everything_busy_is_a_503_with_retry_after() -> None:

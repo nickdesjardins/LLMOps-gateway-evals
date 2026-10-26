@@ -1,13 +1,13 @@
 # Putting the showcase online, step by step
 
-**Status (23 October 2026): not online yet.** Everything below has been prepared and checked
-locally (see [How far this guide has been tried](#how-far-this-guide-has-been-tried)); none of
-the steps that create an account, a repository or a service has been performed.
+**Status (26 October 2026): online.** The repository, the project page (step 2) and the live
+demo on Render (step 5) are up. What has been verified, and what has not yet, is in
+[How far this guide has been tried](#how-far-this-guide-has-been-tried).
 
 | What | Where | Address |
 |---|---|---|
 | The **project page**: recorded requests, the measured threshold, wakes the demo | GitHub Pages | <https://nickdesjardins.github.io/LLMOps-gateway-evals/> (after step 2) |
-| The **live demo**: the API with its playground at `/` | Render (free web service, Docker) | `https://llmops-gateway.onrender.com/` (after step 5; Render may add letters) |
+| The **live demo**: the API with its playground at `/` | Render (free web service, Docker) | <https://llmops-gateway-q68n.onrender.com/> (Render added `-q68n` to the name) |
 | The **semantic cache**: Redis 8 with vector search | Redis Cloud (free database, 30 MB), optional | not public |
 | The **traces**: Langfuse | Langfuse Cloud (free Hobby plan), optional | not public |
 | The **language models** | OpenRouter free models | not public |
@@ -157,7 +157,7 @@ If a value was typed wrong: service page > **Environment** > edit > **Save and d
 
 ## Step 6: link the project page to the live demo (3 minutes)
 
-`site/index.html` holds the demo's address in one place. Today the line reads:
+`site/index.html` holds the demo's address in one place. In a fresh copy the line reads:
 
 ```html
 <a class="btn btn--primary btn--lg" id="demo-link" href="https://llmops-gateway.invalid/#ask">Open the live demo</a>
@@ -219,8 +219,10 @@ With `OPENROUTER_API_KEY` in `.env.local`:
 .\.venv\Scripts\python.exe scripts\openrouter_smoke.py
 ```
 
-Every model of both chains should answer. Replace any that fails in `LIGHT_MODELS` /
-`HEAVY_MODELS` (ids ending in `:free` from <https://openrouter.ai/models>) and run it again.
+Every model of both chains should answer. A failure line says what OpenRouter answered; only a
+401 means the key is wrong. In automatic mode the service replaces a failing model by itself (run
+Model check with **force** to publish new chains); with `LIGHT_MODELS` / `HEAVY_MODELS` set,
+replace it there (ids ending in `:free` from <https://openrouter.ai/models>) and run it again.
 Then:
 
 ```powershell
@@ -252,6 +254,20 @@ the failover scenario (a model id that does not exist, then the real chain). Run
 
 ## How far this guide has been tried
 
+**Verified (26 October 2026), online:**
+
+* The repository is on GitHub, its Tests and Project page workflows are green, and the project
+  page is published at <https://nickdesjardins.github.io/LLMOps-gateway-evals/>; it finds the
+  live demo awake and links to it.
+* The Render service answers: `/livez` alive, `/health` ok in production demo mode, the key
+  configured, the models in automatic mode, the cache in memory (no `REDIS_URL`).
+* The first Model check run failed with "OpenRouter refused the key". The key was fine: two of
+  the 17 free models (`thinkingmachines/inkling` and `inkling-small`) answer every account
+  with a 403, "only available on agentic harnesses", and a 403 was read as a refused key. A
+  403 now closes only that model (in the cascade, the model test, the chooser and both
+  judges), only a 401 or a 403 to every model means the key, and the run prints what
+  OpenRouter said. The fix waits for its first run on GitHub.
+
 **Verified (26 October 2026), on the development machine, with an OpenRouter key:**
 
 * `scripts\openrouter_smoke.py`: all four default models answered (light
@@ -276,7 +292,7 @@ the failover scenario (a model id that does not exist, then the real chain). Run
   `typ-19` is the judge's mistake (an answer word for word the reference, scored as
   contradicting it; both judge models agreed). The report is `site/recorded/deepeval.json`.
 * What the first runs changed in the scoring, each found by reading the cases: a judge model
-  that answers 404 or 400 twice is benched for the run; a flagged case gets a second opinion
+  that answers 404, 400 or 403 twice is benched for the run; a flagged case gets a second opinion
   from the next judge model; DeepEval's claim step is given the question (a terse correct
   answer such as "14 characters [S1]" had scored 0.0 with two different judges). A control
   with wrong answers still failed: "12 characters" scored 0.0, an invented extra rule 0.5.
@@ -295,9 +311,8 @@ the failover scenario (a model id that does not exist, then the real chain). Run
 * `render.yaml`, the Dockerfile and `.env.example` are compared with `app/config.py` by
   `tests/test_site.py`.
 
-**Not verified:** every step above that creates something (the repository, Pages, Redis Cloud,
-Langfuse Cloud, the Render service, the repository secrets and the ruleset); the Model check
-workflow's publishing of `chain.json` (its module is tested offline); Ragas with a real judge
+**Not verified:** Redis Cloud, Langfuse Cloud and the ruleset (not set up); the Model check
+workflow publishing `chain.json` (its first run failed as told above); Ragas with a real judge
 (the day's free requests ran out after the DeepEval runs); the judged suite on GitHub Actions;
 the Langfuse export to a real Langfuse (the SDK was exercised with an in-memory exporter only).
 
@@ -341,8 +356,9 @@ prompt version.
 | The log says "Redis did not answer (...)" | A wrong URL or password, or the database is paused | Check the URL on Redis Cloud's **Connect** page. The service runs on the in-process cache meanwhile. |
 | `/health` says `"status": "degraded"` with `"configured": false` | No provider key | Set `OPENROUTER_API_KEY`. Cached answers are still served. |
 | Requests answer 503 "Every model is busy or failing right now" | Every model of both chains failed (the log names each model and the failure kind) | Wait a minute: free models are rate limited in bursts. If it persists, run `scripts\openrouter_smoke.py`, then the Model check workflow with **force**. |
-| Requests answer 502 "No configured model could take this request" | Every model answered 404 or 400: the chain is gone | In automatic mode the service benches them and tests replacements by itself (`GET /api/v1/models` shows it); run Model check with **force** to publish new chains for every instance. With `LIGHT_MODELS` / `HEAVY_MODELS` set, the chain is pinned: pick new `:free` ids there. |
+| Requests answer 502 "No configured model could take this request" | Every model answered 404, 400 or 403: the chain is gone, or closed to this account (the log line names the model and what OpenRouter said) | In automatic mode the service benches them and tests replacements by itself (`GET /api/v1/models` shows it); run Model check with **force** to publish new chains for every instance. With `LIGHT_MODELS` / `HEAVY_MODELS` set, the chain is pinned: pick new `:free` ids there. |
 | Requests answer 429 | A budget rule was reached; the message says which, `Retry-After` says when | Nothing to fix; raise the limits in `render.yaml` if the allowance allows it. |
+| Model check ends with "Failing this run on purpose: OpenRouter refused the key (...)" or "... is a management key" | A 401, or a 403 to every model: the key is wrong, disabled or out of budget (the brackets hold OpenRouter's words); or it is a management key, which cannot call a model | Make a regular key at <https://openrouter.ai/settings/keys>, replace the `OPENROUTER_API_KEY` secret, run Model check again. A 403 to some models only is not this: those models are marked unreachable and the run goes on. |
 | The quality gate fails with "the report evals/out/deepeval.json was not produced" | The judged suite could not run: no `OPENROUTER_API_KEY` secret, a pull request from a fork, or the judge failed | Read the failed job's log. For a fork, a maintainer runs the workflow on a branch of the repository. |
 | The gate fails on faithfulness with answers that look right | The judge is noisy | Read the cases in the run summary; try the Anthropic judge (step 7). |
 | The project page still says the demo is not online | Step 6 not done, or the service failing to start | Open `/livez` on the service; then fix the link or read Render's **Logs**. |

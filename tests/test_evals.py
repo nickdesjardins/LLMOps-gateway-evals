@@ -189,6 +189,8 @@ async def test_the_judge_falls_over_to_its_next_model() -> None:
 class GoneFirstModel(DeepEvalScript):
     """The first judge model answers 404 to every request, like a model withdrawn for the account."""
 
+    kind = "not_found"
+
     def __init__(self) -> None:
         super().__init__()
         self.models: list[str] = []
@@ -196,8 +198,24 @@ class GoneFirstModel(DeepEvalScript):
     async def complete(self, model: str, request: ChatRequest) -> Completion:
         self.models.append(model)
         if model == "judge/gone:free":
-            raise ProviderError(model, "not_found", "404")
+            raise ProviderError(model, self.kind, "404" if self.kind == "not_found" else "403")  # type: ignore[arg-type]
         return await super().complete(model, request)
+
+
+class ClosedFirstModel(GoneFirstModel):
+    """The first judge model answers 403, like a free model kept for agentic harnesses."""
+
+    kind = "forbidden"
+
+
+async def test_a_judge_model_that_answers_403_moves_on_and_is_benched_after_two() -> None:
+    from deepeval.metrics.faithfulness.schema import Claims
+
+    script = ClosedFirstModel()
+    judge = GatewayJudge(provider=script, models=["judge/gone:free", "judge/b:free"], min_interval_s=0)
+    for _ in range(3):
+        assert (await judge.a_generate('Extract "claims" as JSON', schema=Claims)).claims
+    assert script.models.count("judge/gone:free") == 2 and judge.benched == ["judge/gone:free"]
 
 
 async def test_a_judge_model_that_answers_404_twice_is_benched_for_the_run() -> None:

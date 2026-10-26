@@ -44,6 +44,7 @@ from app.errors import (
     Unauthorized,
     new_incident_id,
 )
+from app.providers.base import ProviderError
 from app.rag.pipeline import AskOptions
 from app.rag.prompts import PROMPT_VERSION, REFUSAL_TOKEN, SYSTEM_PROMPT
 from app.schemas import (
@@ -547,7 +548,12 @@ def create_app(settings: Settings | None = None, components: Components | None =
     @app.exception_handler(GatewayError)
     async def _gateway_error(_: Request, exc: GatewayError) -> JSONResponse:
         if exc.status_code >= 500:
-            logger.warning("%s %s (incident %s)", exc.error_type, exc.message, exc.incident_id)
+            cause = exc.__cause__
+            why = ""
+            if isinstance(cause, ProviderError):  # the log gets the provider's story, the client never
+                why = f" [{cause.model}: {cause.kind}: {cause.detail}"
+                why += f"; the provider said: {cause.provider_message}]" if cause.provider_message else "]"
+            logger.warning("%s %s%s (incident %s)", exc.error_type, exc.message, why, exc.incident_id)
         return JSONResponse(status_code=exc.status_code, content=exc.body(), headers=exc.headers())
 
     @app.exception_handler(ConfigurationError)

@@ -13,7 +13,9 @@ What moves the cascade on, and what stops it:
 400                     next model (this model's endpoint refused the request's shape)
 invalid output          next model (empty, cut off before any text, failed validation)
 refusal                 next model
-401 / 403               stop: every model of the provider shares the key
+403                     next model (OpenRouter closes some models to some accounts: "only
+                        available on agentic harnesses", a provider's terms, a moderation flag)
+401                     stop: every model of the provider shares the key
 deadline                stop: ``REQUEST_DEADLINE_S`` covers the whole cascade
 ======================  ==============================================================
 
@@ -25,6 +27,7 @@ error event.
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass, field
@@ -35,8 +38,10 @@ from app.pricing import PriceBook
 from app.providers.base import FATAL_KINDS, ChatRequest, Completion, Provider, ProviderError, StreamEvent
 from app.telemetry.tracer import SpanHandle, Trace, preview
 
+logger = logging.getLogger(__name__)
+
 #: Failure kinds that a retry later will not cure.
-_PERMANENT = frozenset({"auth", "not_found", "bad_request"})
+_PERMANENT = frozenset({"auth", "forbidden", "not_found", "bad_request"})
 
 RequestFactory = Callable[[Tier], ChatRequest]
 Validator = Callable[[Completion], str | None]
@@ -153,6 +158,15 @@ class ModelCascade:
                 reference_cost_usd=self.prices.reference_cost(self.reference_models[tier], error.usage),
             )
         span.end("error", failure=error.kind, detail=error.detail)
+        if error.provider_message:  # the log only: spans are served by /api/v1/traces
+            log = logger.warning if error.kind in _PERMANENT else logger.info
+            log(
+                "%s failed (%s: %s); the provider said: %s",
+                error.model,
+                error.kind,
+                error.detail,
+                error.provider_message,
+            )
 
     @staticmethod
     def _give_up(attempts: list[Attempt], reason: str | None = None) -> Exception:
@@ -161,7 +175,7 @@ class ModelCascade:
             return UpstreamUnavailable(
                 "No model answered within the request deadline; please retry.", retry_after_s=10
             )
-        if kinds and kinds <= _PERMANENT:
+        if not attempts or kinds <= _PERMANENT:  # no attempt: every chain is empty
             return UpstreamFailed("No configured model could take this request.")
         return UpstreamUnavailable(
             "Every model is busy or failing right now; please retry in a moment.", retry_after_s=10
