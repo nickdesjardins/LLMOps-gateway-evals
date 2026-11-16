@@ -23,7 +23,11 @@ def test_defaults_match_the_specification() -> None:
     assert settings.max_output_tokens_light < settings.max_output_tokens_heavy
     assert settings.llm_provider == "openrouter"
     assert all(is_free_model(m) for m in settings.chain("light") + settings.chain("heavy"))
-    assert set(settings.chain("light")).isdisjoint(settings.chain("heavy"))
+    # Roles have separate primaries; a model qualified for both may be a shared fallback.
+    assert settings.chain("light")[0] != settings.chain("heavy")[0]
+    for tier in ("light", "heavy"):
+        chain = settings.chain(tier)  # type: ignore[arg-type]
+        assert len(chain) == len(set(chain))
 
 
 def test_each_free_chain_spans_two_upstream_vendors() -> None:

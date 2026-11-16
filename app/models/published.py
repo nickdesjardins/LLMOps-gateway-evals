@@ -14,7 +14,8 @@ the defaults). A fork that changes a prompt therefore ignores this project's fil
 
 A test is due (:func:`due`) when nothing usable is published, when the last test is six and a
 half days old, when the last one confirmed nothing and 20 hours have passed, when OpenRouter's
-list of free models changed, or when the run was started with ``--force``.
+list loses a chain member or gains a candidate for an open place, or when the run was started
+with ``--force``. Unrelated catalogue changes wait for the weekly check.
 
 Run by the workflow (``--previous`` is the file currently published, if any)::
 
@@ -48,7 +49,7 @@ from app.config import (
 from app.models import cases, rules
 from app.models.cases import ROLES, Role
 from app.models.catalogue import free_models, is_free_id
-from app.models.testing import STAMP, ModelReport, run_test
+from app.models.testing import LIGHT_MAX_MEDIAN_S, STAMP, ModelReport, run_test
 
 VERSION = 1
 MAX_BYTES = 64_000
@@ -84,6 +85,7 @@ def fingerprint() -> str:
         cases.fingerprint_material(),
         [rules.PLACES, sorted((k, list(v)) for k, v in rules.PREFERENCE.items())],
         {role: chain for role, chain in DEFAULT_CHAINS.items()},
+        ["light-latency-from-light-cases-v1", LIGHT_MAX_MEDIAN_S],
         VERSION,
     ]
     return hashlib.sha256(json.dumps(material, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
@@ -148,12 +150,14 @@ def due(previous: Published | None, free_list: list[str], now: datetime, force: 
         return "the last test confirmed nothing, 20 hours ago or more"
     if age >= DUE_AFTER:
         return "the last test is six and a half days old"
-    if sorted(free_list) != sorted(previous.free_list):
-        return "OpenRouter's list of free models changed"
     for role, chain in previous.chains.items():
         missing = [m for m in chain if m not in free_list]
         if missing:
             return f"a model of the {role} chain is no longer listed: {', '.join(missing)}"
+    if set(free_list) - set(previous.free_list) and any(
+        len(chain) < rules.PLACES for chain in previous.chains.values()
+    ):
+        return "OpenRouter's list changed: a new free model could fill an open place"
     return None
 
 
@@ -190,6 +194,13 @@ def _summary(line: str) -> None:
 
 def _fail(why: str) -> int:
     _summary(f"Failing this run on purpose: {why}")
+    # An annotation shows the cause on the run page, without digging through the test job.
+    escaped = why.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::error title=Model check failed::{escaped}")
+    output = os.environ.get("GITHUB_OUTPUT")
+    if output:
+        with open(output, "a", encoding="utf-8") as handle:
+            handle.write(f"failure_reason={escaped}\n")
     return 1
 
 
@@ -274,6 +285,9 @@ async def _main(args: argparse.Namespace) -> int:
         if closed:
             said = f"; OpenRouter said: {closed.provider_said}" if closed.provider_said else ""
             line += f" ({closed.failure}: {closed.why}{said})"
+        wrong = [f"{r.case_id}: {r.why}" for r in report.results if r.outcome == "wrong"]
+        if wrong:
+            line += f"; failed cases: {'; '.join(wrong)}"
         _summary(line)
     failing = {role: rules.members_failing(current[role], by_model, role) for role in ROLES}
     if not confirmed:

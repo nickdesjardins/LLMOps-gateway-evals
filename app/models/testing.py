@@ -90,8 +90,15 @@ class ModelReport:
         qualified: list[Role] = []
         for role, needs in cases.NEEDS.items():
             if all(self.right(case_id) for case_id in needs):
-                if role == "light" and (self.median_s is None or self.median_s > LIGHT_MAX_MEDIAN_S):
-                    continue
+                if role == "light":
+                    # Heavy synthesis and judge calls do not measure light-request latency.
+                    times = [
+                        r.seconds
+                        for r in self.results
+                        if r.case_id in needs and r.outcome == "right" and r.seconds is not None
+                    ]
+                    if not times or statistics.median(times) > LIGHT_MAX_MEDIAN_S:
+                        continue
                 qualified.append(role)
         return qualified
 

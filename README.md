@@ -286,15 +286,15 @@ this gateway's own work, through the real prompt, ceilings and validation:
 | `synthesis` | Three passages, a two-part question (a supplier's new bank details, and how to report the email) | It cites both passages it needs and names the callback, the 5-day hold and the Report Phish button |
 | `judge` | A DeepEval-style verdict task: two claims, one context | JSON with one verdict per claim: yes, then no |
 
-Light needs `grounded` and `refusal` and a median answer under 12 s; heavy needs those and
+Light needs `grounded` and `refusal` and a median of those light answers at most 12 s; heavy needs those and
 `synthesis`; the eval judge needs `judge`. A 404, 400 or 403 makes a model *unreachable* (its
 test stops there); a 429, a timeout or an upstream error leaves it *not judged*: the moment, not the
 model.
 
-**The measured defaults** (26 October 2026, `benchmarks/2026-10-26/`, every answer saved). Of
+**The original measured defaults** (26 October 2026, `benchmarks/2026-10-26/`, every answer saved). Of
 the 17 free models OpenRouter listed, six passed all four cases:
 
-| Model | Median answer | Role in the defaults |
+| Model | Median answer | Role in the October defaults |
 |---|---|---|
 | `nvidia/nemotron-3.5-lightning:free` | 0.96 s | light, first |
 | `cohere/north-mini-code:free` | 1.08 s | light, second |
@@ -302,6 +302,14 @@ the 17 free models OpenRouter listed, six passed all four cases:
 | `dots-studio/dots-3-note-preview:free` | 2.42 s | judge, first |
 | `nvidia/nemotron-3-ultra-550b-a55b:free` | 2.89 s | heavy, first; judge, second |
 | `recursive/flint-v1.0:free` | 4.31 s | heavy, second |
+
+**Current update, 16 November:** the heavy fallback is now `cohere/north-mini-code:free`.
+Across the 11 published checks from 26 October through 14 November it passed the heavy cases
+every time; Flint exceeded the synthesis token ceiling in seven checks. Ultra remains first,
+and the judge defaults are unchanged. North Mini Code is now a shared fallback for the two
+tiers, with each tier's own token ceiling; their primary models remain different. The evidence is in the
+[`tested-models` history](https://github.com/nickdesjardins/LLMOps-gateway-evals/commits/tested-models/).
+This changes the configuration fingerprint, so old published chains are replaced on the next check.
 
 Each chain spans two upstream vendors. The judge chain starts with a model that writes none of
 the answers, so the judge does not grade its own work. Both Google models were rate limited on
@@ -338,7 +346,8 @@ chooser adopts must match `vendor/model:free`.
 nobody visits tests nothing, and a free host forgets its files at every sleep. So a scheduled
 job runs every day at 06:47 UTC: deciding whether a test is due costs nothing (one is due when
 nothing usable is published, after six and a half days, 20 hours after a test that confirmed
-nothing, or as soon as OpenRouter's list of free models changes). The test sends the four cases
+nothing, when a chain member disappears, or when a newly listed model could fill an open place).
+Unrelated catalogue changes wait for the weekly check. The test sends the four cases
 to up to 24 free models (about 100 free requests, read against the day's allowance first) and a
 second job, which runs no downloaded code, commits the chains to `chain.json` on the branch
 `tested-models` (not `main`: Render would redeploy at every publication). Services read it at
@@ -346,7 +355,8 @@ start-up and after a failure, and both judges of the quality gate read its `judg
 file is checked before it is used: 64,000 bytes at most, version 1, a date not in the future,
 one to three `:free` ids per role, and a fingerprint of the cases, the prompt, the rules and
 the defaults, so a fork that changes a prompt ignores this project's file by itself. A red run
-ends with a line that begins "Failing this run on purpose:" saying what the owner has to do.
+shows a **Model check failed** annotation with the actual cause; the test summary includes each
+failed case and its reason. The log also keeps the line beginning "Failing this run on purpose:".
 
 With `LLM_PROVIDER=anthropic` the tiers are `claude-haiku-5-5` and `claude-opus-5-5`, paid
 models the operator chose: nothing is tested or replaced.

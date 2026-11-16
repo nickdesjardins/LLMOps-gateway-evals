@@ -35,10 +35,15 @@ SECONDS_BETWEEN_STARTS = 6.0
 SECONDS_BETWEEN_TESTS = 15 * 60
 
 #: Model families in the order a person prefers them when two candidates both pass, per role.
-#: Measured on 26 October 2026 (benchmarks/2026-10-26/); a family is the id without ":free".
+#: Initially measured on 26 October 2026 (benchmarks/2026-10-26/); heavy's second choice was
+#: reviewed against published checks through 14 November. A family is the id without ":free".
 PREFERENCE: dict[Role, tuple[str, ...]] = {
     "light": ("nvidia/nemotron-3.5-lightning", "cohere/north-mini-code", "nvidia/nemotron-3.5-super-vl"),
-    "heavy": ("nvidia/nemotron-3-ultra-550b-a55b", "recursive/flint-v1.0", "dots-studio/dots-3-note-preview"),
+    "heavy": (
+        "nvidia/nemotron-3-ultra-550b-a55b",
+        "cohere/north-mini-code",
+        "dots-studio/dots-3-note-preview",
+    ),
     "judge": ("dots-studio/dots-3-note-preview", "nvidia/nemotron-3-ultra-550b-a55b", "recursive/flint-v1.0"),
 }
 

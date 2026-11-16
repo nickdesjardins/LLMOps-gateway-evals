@@ -4,7 +4,8 @@
 #
 #   test     Decides whether a test of the free models is due: nothing is published yet, the
 #            last test is six and a half days old, the last test confirmed nothing, or
-#            OpenRouter's list of free models changed. Deciding costs nothing and needs no key.
+#            a chain member disappeared, or a new model could fill a free place. Unrelated
+#            catalogue changes wait for the weekly test. Deciding costs nothing and needs no key.
 #            The test itself is the service's own (app/models/testing.py): the four cases of
 #            app/models/cases.py per model, up to 24 models, about 100 free requests at most.
 #            It needs the repository secret OPENROUTER_API_KEY. Without it this job only says
@@ -69,6 +70,7 @@ jobs:
     outputs:
       file: ${{ steps.test.outputs.file }}
       status: ${{ steps.test.outputs.status }}
+      failure_reason: ${{ steps.test.outputs.failure_reason }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -195,8 +197,13 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: The owner has something to do
+        env:
+          FAILURE_REASON: ${{ needs.test.outputs.failure_reason }}
         run: |
-          echo "The job 'Test the free models, if a test is due' did not end well."
-          echo "Open it and read the end of its step 'Decide, test, and write the file to publish'."
-          echo "A line that begins 'Failing this run on purpose:' says what you can do."
+          if [ -n "$FAILURE_REASON" ]; then
+            # The Python command already escaped this as GitHub annotation data.
+            printf '%s\n' "::error title=Model check failed::$FAILURE_REASON"
+          else
+            echo "::error::The model test job failed before reporting a verdict. Open 'Test the free models, if a test is due' and read its first failed step."
+          fi
           exit 1

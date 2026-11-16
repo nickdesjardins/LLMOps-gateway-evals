@@ -88,6 +88,30 @@ async def test_light_escalates_to_heavy_with_the_heavy_ceiling() -> None:
     assert provider.calls[-1][1].max_tokens == 400 and provider.calls[0][1].max_tokens == 100
 
 
+async def test_a_shared_fallback_can_succeed_with_the_other_tiers_larger_ceiling() -> None:
+    provider = ScriptedProvider(
+        {
+            "l1:free": [rate_limited()],
+            "h1:free": [rate_limited()],
+            "shared:free": [ProviderError("shared:free", "invalid_output", "cut off"), "Complete answer"],
+        }
+    )
+    cascade = ModelCascade(
+        provider,
+        {"light": ["l1:free", "shared:free"], "heavy": ["h1:free", "shared:free"]},
+        prices=PriceBook(),
+        reference_models=REFS,
+    )
+    result = await cascade.complete(factory, trace(), tier="light")
+    assert result.tier == "heavy" and result.completion.text == "Complete answer"
+    assert [
+        (request.tier, request.max_tokens) for model, request in provider.calls if model == "shared:free"
+    ] == [
+        ("light", 100),
+        ("heavy", 400),
+    ]
+
+
 async def test_a_bad_key_stops_the_cascade() -> None:
     provider = ScriptedProvider(
         {"l1:free": [ProviderError("l1:free", "auth", "the key was refused (401)", status=401)]}

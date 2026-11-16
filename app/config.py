@@ -50,11 +50,13 @@ Tier = Literal["light", "heavy"]
 #:   judge  not the model that writes most answers, so the judge does not grade its own work.
 #: Automatic mode keeps these working by itself (app/models/chooser.py): this is where it starts.
 DEFAULT_OPENROUTER_LIGHT = "nvidia/nemotron-3.5-lightning:free,cohere/north-mini-code:free"
-DEFAULT_OPENROUTER_HEAVY = "nvidia/nemotron-3-ultra-550b-a55b:free,recursive/flint-v1.0:free"
+# Reviewed 16 November against 11 published checks (26 October–14 November): North Mini Code
+# passed heavy in every check; Flint exceeded the synthesis ceiling in seven. Keep Ultra first.
+DEFAULT_OPENROUTER_HEAVY = "nvidia/nemotron-3-ultra-550b-a55b:free,cohere/north-mini-code:free"
 #: The eval suite's LLM-as-a-judge, when EVAL_JUDGE_MODELS names none.
 DEFAULT_OPENROUTER_JUDGE = "dots-studio/dots-3-note-preview:free,nvidia/nemotron-3-ultra-550b-a55b:free"
-#: The day these defaults were measured with this project's own cases (benchmarks/).
-DEFAULT_MEASURED_ON = "2026-10-26"
+#: Most recent test supporting these defaults (benchmarks/ and tested-models branch history).
+DEFAULT_MEASURED_ON = "2026-11-14"
 
 #: Where this project publishes the chains its scheduled test confirmed: one small JSON file on
 #: a branch of its own, written by .github/workflows/model-check.yml. A clone reads the same
