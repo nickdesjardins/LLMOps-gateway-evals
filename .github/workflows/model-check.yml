@@ -9,7 +9,7 @@
 #            The test itself is the service's own (app/models/testing.py): the four cases of
 #            app/models/cases.py per model, up to 24 models, about 100 free requests at most.
 #            It needs the repository secret OPENROUTER_API_KEY. Without it this job only says
-#            what is due.
+#            what is due, and fails if no fresh confirmed chains can be kept.
 #
 #   publish  Writes the chains to chain.json on the branch "tested-models". A service in
 #            automatic mode reads that file at start-up and after a model failed
@@ -21,8 +21,10 @@
 #            write the file to publish" then ends with a line that begins "Failing this run on
 #            purpose:": a role has no model that passed, a model of a chain failed its cases (only
 #            a person reorders a chain), OpenRouter refused the key (a 401, or a 403 to every
-#            model: a 403 to some models only marks those models unreachable), the day's
-#            allowance is too low, or the published chains are over 14 days old. A red run without such a line
+#            model: a 403 to some models only marks those models unreachable), the published
+#            chains are over 14 days old, or no confirmed chain can be kept. Temporary outages
+#            and low quota warn while confirmed chains remain fresh; they never advance the
+#            successful-test date. A red run without such a line
 #            means the job itself broke.
 #
 # Why testing and publishing are two jobs: the job that holds the key and runs downloaded

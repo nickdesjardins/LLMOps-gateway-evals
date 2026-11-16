@@ -332,7 +332,9 @@ requests per model).
 
 **While the service runs** (`app/models/chooser.py`). Starting calls no model: the chains start
 from the measured defaults, then `model_cache.json` (this machine's last choice, never
-committed), then the published file if its test is newer. After a request, the cascade reports
+committed), then the published file if its confirmed test is newer and at most 14 days old.
+Healthy traffic also checks for a published update in the background at most once an hour;
+this fetch calls no model, never blocks the visitor, and leaves pinned tiers alone. After a request, the cascade reports
 every attempt. A 429 or a timeout is left alone. A 404, 400 or 403 is looked into in the
 background, at most once a minute per model: the published file is read again, OpenRouter's
 list is checked, and the model is probed once with the `grounded` case. A model that is
@@ -347,7 +349,10 @@ nobody visits tests nothing, and a free host forgets its files at every sleep. S
 job runs every day at 06:47 UTC: deciding whether a test is due costs nothing (one is due when
 nothing usable is published, after six and a half days, 20 hours after a test that confirmed
 nothing, when a chain member disappears, or when a newly listed model could fill an open place).
-Unrelated catalogue changes wait for the weekly check. The test sends the four cases
+Unrelated catalogue changes wait for the weekly check. All current chain members are tested
+first; additional candidates rotate across checks when the catalogue exceeds the request cap,
+including when the chains are full. Passing candidates are recorded; chain order stays stable.
+The test sends the four cases
 to up to 24 free models (about 100 free requests, read against the day's allowance first) and a
 second job, which runs no downloaded code, commits the chains to `chain.json` on the branch
 `tested-models` (not `main`: Render would redeploy at every publication). Services read it at
@@ -357,6 +362,15 @@ one to three `:free` ids per role, and a fingerprint of the cases, the prompt, t
 the defaults, so a fork that changes a prompt ignores this project's file by itself. A red run
 shows a **Model check failed** annotation with the actual cause; the test summary includes each
 failed case and its reason. The log also keeps the line beginning "Failing this run on purpose:".
+
+An inconclusive test, temporary catalogue/account outage, or low daily allowance keeps fresh
+confirmed chains and their original successful-test date. Failed test attempts are recorded
+separately and retried after 20 hours; they do not make the evidence look newer. Missing initial
+evidence, authentication failures, withdrawn roles with no usable fallback, real answer-quality
+failures, and evidence older than 14 days still fail the check. A model test has a 20-minute
+deadline inside the workflow's 30-minute limit. Unknown prices are excluded from discovery;
+if the provider does not report remaining quota, the summary says that only the fixed request
+cap can be enforced.
 
 With `LLM_PROVIDER=anthropic` the tiers are `claude-haiku-5-5` and `claude-opus-5-5`, paid
 models the operator chose: nothing is tested or replaced.

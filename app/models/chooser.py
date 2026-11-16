@@ -48,6 +48,7 @@ TIERS: tuple[Tier, ...] = ("light", "heavy")
 #: Failure kinds worth a look: the model may be gone, or closed to this account.
 LOOK_AT = frozenset({"not_found", "bad_request", "forbidden"})
 LOOK_EVERY_S = 60.0
+PUBLISHED_REFRESH_S = 60 * 60
 
 
 def _stamp(moment: datetime) -> str:
@@ -84,6 +85,8 @@ class ModelChooser:
         self._clock = clock
         self._looked: dict[str, float] = {}
         self._last_test_at: float | None = None
+        self._last_publication_at: float | None = None
+        self._refresh_task: asyncio.Task[Any] | None = None
         self._tasks: set[asyncio.Task[Any]] = set()
         self._lock = asyncio.Lock()
 
@@ -167,6 +170,7 @@ class ModelChooser:
         """Adopt the published chains if they are newer than the ones in use. True when adopted."""
         if self._fetch_published is None or self.mode != "automatic":
             return False
+        self._last_publication_at = self._clock()
         try:
             text = await asyncio.to_thread(self._fetch_published)
             found = published.parse(text)
@@ -179,6 +183,9 @@ class ModelChooser:
             )
             return False
         if found.tested <= self._tested:
+            return False
+        if not found.confirmed or datetime.now(UTC) - found.tested > published.STALE_AFTER:
+            logger.warning("The published chains are unconfirmed or stale; keeping the current chains")
             return False
         if any(m in self.benched for chain in found.chains.values() for m in chain):
             logger.info("The published chains name a model benched here; they were not used")
@@ -206,6 +213,25 @@ class ModelChooser:
         )
 
     # ------------------------------------------------------------ after failures
+    async def _refresh(self) -> None:
+        async with self._lock:
+            await self.read_published(reason="hourly refresh after a request")
+
+    def _refresh_when_due(self, now: float) -> None:
+        if self._fetch_published is None or (
+            self._refresh_task is not None and not self._refresh_task.done()
+        ):
+            return
+        if self._last_publication_at is not None and now - self._last_publication_at < PUBLISHED_REFRESH_S:
+            return
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        self._refresh_task = loop.create_task(self._refresh())
+        self._tasks.add(self._refresh_task)
+        self._refresh_task.add_done_callback(self._tasks.discard)
+
     def note(self, attempts: Sequence[Any]) -> None:
         """Called by the cascade after every request, with its attempts. Never raises."""
         if self.mode != "automatic":
@@ -224,6 +250,7 @@ class ModelChooser:
                     self._looked[attempt.model] = now
                     suspects.append(attempt.model)
         if not suspects:
+            self._refresh_when_due(now)
             return
         try:
             task = asyncio.get_running_loop().create_task(self.look(suspects))

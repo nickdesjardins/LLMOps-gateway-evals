@@ -29,6 +29,7 @@ import json
 import os
 import re
 import time
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -58,7 +59,10 @@ def published_judges() -> list[str]:
     settings = Settings()
     if settings.model_published_url:
         try:
-            return published.parse(published.fetch(settings.model_published_url)).chains["judge"]
+            found = published.parse(published.fetch(settings.model_published_url))
+            if not found.confirmed or datetime.now(UTC) - found.tested > published.STALE_AFTER:
+                raise published.Unusable("the published chains are unconfirmed or over 14 days old")
+            return found.chains["judge"]
         except Exception as exc:  # nothing published yet, a stale file, no network
             print(f"Judge: the published chain was not used ({exc}); using the measured default.")
     return parse_model_chain(DEFAULT_OPENROUTER_JUDGE)

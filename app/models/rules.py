@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 
-from app.models.cases import Role
+from app.models.cases import NEEDS, Role
 from app.models.testing import CaseResult, ModelReport
 
 #: Models in a chain, at most: two like the measured default, and one spare.
@@ -123,6 +123,12 @@ def members_failing(chain: Sequence[str], reports: Mapping[str, ModelReport], ro
     failing = []
     for model in chain:
         report = reports.get(model)
-        if report is not None and report.judged and not report.unreachable and role not in report.roles():
-            failing.append(model)
+        if report is None or report.unreachable:
+            continue
+        wrong = any(r.case_id in NEEDS[role] and r.outcome == "wrong" for r in report.results)
+        slow = (
+            role == "light" and all(report.right(case) for case in NEEDS[role]) and role not in report.roles()
+        )
+        if wrong or slow:
+            failing.append(model)  # another role's rate limit cannot hide a known bad answer
     return failing

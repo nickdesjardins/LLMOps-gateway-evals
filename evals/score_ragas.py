@@ -29,6 +29,7 @@ import os
 import re
 import sys
 import time
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,8 @@ PUBLISHED_URL = (
     "https://raw.githubusercontent.com/nickdesjardins/LLMOps-gateway-evals/tested-models/chain.json"
 )
 FREE_ID = re.compile(r"[a-z0-9][a-z0-9._-]{0,63}/[a-z0-9][a-z0-9._-]{0,95}:free")
+#: The same freshness limit as app/models/published.py, without importing the service environment.
+STALE_AFTER = timedelta(days=14)
 #: A judge model that answered 404, 400 or 403 this many times gets no more requests for the rest of
 #: the run (it cannot be called from this account), as in evals/judge.py.
 BENCH_AFTER = 2
@@ -57,11 +60,24 @@ def judge_models() -> list[str]:
         with urllib.request.urlopen(
             os.environ.get("MODEL_PUBLISHED_URL", PUBLISHED_URL), timeout=10
         ) as response:
-            chain = json.loads(response.read(64_001))["chains"]["judge"]
+            raw = response.read(64_001)
+        if len(raw) > 64_000:
+            raise ValueError("the published file is larger than 64,000 bytes")
+        document = json.loads(raw)
+        if not isinstance(document, dict) or document.get("version") != 1:
+            raise ValueError("the published file is not a version 1 chain file")
+        tested = datetime.strptime(document["tested"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+        now = datetime.now(UTC)
+        if document.get("confirmed", True) is not True:
+            raise ValueError("the published chains are unconfirmed")
+        if tested > now + timedelta(minutes=5) or now - tested > STALE_AFTER:
+            raise ValueError("the publication date is in the future or over 14 days old")
+        chain = document["chains"]["judge"]
         if (
             isinstance(chain, list)
             and 1 <= len(chain) <= 3
             and all(isinstance(m, str) and FREE_ID.fullmatch(m) for m in chain)
+            and len(set(chain)) == len(chain)
         ):
             return chain
         print("Ragas judge: the published judge chain is malformed; using the default.")

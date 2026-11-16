@@ -49,9 +49,10 @@ def free_models(base_url: str, fetch: Fetch | None = None) -> list[str]:
         if not is_free_id(model_id) or "text" not in modality:
             continue
         try:
-            if float(pricing.get("prompt", 0)) or float(pricing.get("completion", 0)):
+            # An absent price is unknown, not evidence that the call is free.
+            if float(pricing["prompt"]) != 0 or float(pricing["completion"]) != 0:
                 continue
-        except (TypeError, ValueError):
+        except (KeyError, TypeError, ValueError):
             continue
         out.append(model_id)
     return out
