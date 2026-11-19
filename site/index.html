@@ -11,7 +11,7 @@
   <meta name="referrer" content="no-referrer">
   <meta name="format-detection" content="telephone=no">
   <title>Production LLMOps Gateway</title>
-  <meta name="description" content="A FastAPI gateway in front of every model call: a Redis semantic cache measured on its own threshold trade-off, complexity routing across model tiers, multi-model failover, Langfuse tracing with tokens and cost, and a DeepEval and Ragas quality gate that blocks pull requests.">
+  <meta name="description" content="A FastAPI gateway in front of every model call: a Redis semantic cache measured on its own threshold trade-off, complexity routing across model tiers, multi-model failover, Langfuse tracing with tokens and cost, and a quality gate on GitHub Actions whose check fails above 5% hallucination on a DeepEval-judged golden set.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Production LLMOps Gateway">
   <meta property="og:description" content="Semantic caching, complexity routing, failover, tracing and evaluation in CI: FastAPI, Redis vector search, Langfuse, DeepEval, Ragas, GitHub Actions, free models.">
@@ -61,7 +61,7 @@
           over to the next one without dropping the request. Every step is a span of one trace,
           with tokens and dollars, mirrored to Langfuse.
         </p>
-        <p class="lede"><strong>And nothing merges on a hunch.</strong> A GitHub Actions workflow answers a golden set of questions with the real pipeline, has DeepEval and Ragas judge every answer, and blocks the pull request when the hallucination rate passes 5% or faithfulness drops below 0.95.</p>
+        <p class="lede"><strong>Proving it is the quality gate's job.</strong> A GitHub Actions workflow answers a golden set of questions with the real pipeline and has DeepEval judge the answers. Its Gate check fails when the hallucination rate passes 5% or faithfulness drops below 0.95; once Gate is a required status check, a failing gate disables the merge button. Ragas is wired in as a second judge but has not yet run with a real judge. So far the judged suite has run only on a development machine (26 October 2026), and the recorded run failed the gate by one case.</p>
         <p class="stackline">FastAPI · Pydantic v2 · Server-Sent Events · Redis 8 vector search (HNSW, cosine) · bge-small embeddings on the CPU · Langfuse v5 · DeepEval · Ragas · GitHub Actions · free OpenRouter models</p>
       </div>
       <div class="demo" id="demo" aria-label="Live demo">
@@ -221,26 +221,27 @@
     <div class="section__head">
       <h2 id="gate-title">The quality gate</h2>
     </div>
-    <p class="section__intro">Telemetry tells you what happened in production; it cannot tell you whether a change is safe to merge. That is the job of an offline evaluation against a fixed set of questions, on every pull request. The golden set has 37 cases: 20 typical questions, 7 edge cases (boundaries, multi-step, two documents), 5 prompt-injection attempts and 5 questions the handbook does not answer.</p>
+    <p class="section__intro">Telemetry tells you what happened in production; it cannot tell you whether a change is safe to merge. That is the job of an offline evaluation against a fixed set of questions. The workflow runs on every pull request: the retrieval check and the Gate job each time, the judged suite when the pull request touches something an answer depends on (<code>app/</code>, <code>corpus/</code>, <code>evals/</code>, the requirements). The golden set has 37 cases: 20 typical questions, 7 edge cases (boundaries, multi-step, two documents), 5 prompt-injection attempts and 5 questions the handbook does not answer.</p>
     <div class="cards">
-      <article class="card"><span class="sev" data-sev="medium">retrieval</span><h3>Context precision</h3><p>Are the passages that hold the answer ranked first? Scored twice: from labels, with no model, on every pull request; and by DeepEval's and Ragas' judges against the reference answer.</p></article>
+      <article class="card"><span class="sev" data-sev="medium">retrieval</span><h3>Context precision</h3><p>Are the passages that hold the answer ranked first? Scored from labels, with no model, on every pull request, and by DeepEval's judge against the reference answer. Ragas is wired to score it as well but has not yet run with a real judge.</p></article>
       <article class="card"><span class="sev" data-sev="high">generation</span><h3>Faithfulness</h3><p>Every claim of the answer is extracted and checked against the retrieved passages. A claim the passages do not support counts against the answer, not only one they contradict. The gate wants 0.95 or more.</p></article>
       <article class="card"><span class="sev" data-sev="medium">generation</span><h3>Answer relevance</h3><p>How much of the answer addresses the question. An answer can be faithful and useless; this catches the drift.</p></article>
       <article class="card"><span class="sev" data-sev="high">safety</span><h3>Hallucination rate</h3><p>A case hallucinates when its answer contradicts the reference passages, when fewer than 70% of its claims are supported, or when the system answers a question the handbook does not answer. The gate allows 5% at most.</p></article>
       <article class="card"><span class="sev" data-sev="high">safety</span><h3>Injection resistance</h3><p>Every adversarial case names strings that must not appear in its answer (a canary, a system prompt line). One leak fails the build: no judge needed.</p></article>
       <article class="card"><span class="sev" data-sev="medium">behaviour</span><h3>Refusal accuracy</h3><p>Answered when it should, declined when it should. Measured exactly, from the refusal token.</p></article>
     </div>
-    <h3 class="subhead">How a pull request is blocked</h3>
+    <h3 class="subhead">What checks a pull request</h3>
     <ol class="pipeline" id="gate-pipeline">
       <li><strong>Tests</strong><span>the hermetic suite and ruff; no key, no network</span></li>
       <li><strong>Retrieval check</strong><span>the real embedding model on the golden set; no key</span></li>
       <li><strong>Generate answers</strong><span>the real pipeline answers all 37 cases on free models</span></li>
-      <li><strong>DeepEval</strong><span>RAG triad and hallucination, LLM-as-a-judge</span></li>
-      <li><strong>Ragas</strong><span>a second judge of the same answers, in its own environment</span></li>
-      <li><strong>Gate</strong><span>floors, plus no metric more than 0.03 below the accepted baseline</span></li>
+      <li><strong>DeepEval</strong><span>RAG triad and hallucination, LLM-as-a-judge, on the 30 cases that expect an answer</span></li>
+      <li><strong>Ragas</strong><span>wired in as a second judge, in its own environment; not yet run with a real judge</span></li>
+      <li><strong>Gate</strong><span>fails on the floors; the rule against a drop of more than 0.03 waits for an accepted baseline</span></li>
     </ol>
+    <p class="footnote">The other 7 cases should be refused (the 5 unanswerable questions and 2 of the injection attempts) and get only the checks that need no judge. A failing Gate disables the merge button only once it is a required status check (<a href="https://github.com/nickdesjardins/LLMOps-gateway-evals/blob/main/docs/DEPLOY.md">docs/DEPLOY.md</a>, step 7, item 5). That ruleset is not set up yet, and the judged suite has not yet run on GitHub Actions.</p>
     <div class="tablewrap"><table id="gate-table"><thead><tr><th>Rule</th><th>Threshold</th><th>Last measured</th></tr></thead><tbody></tbody></table></div>
-    <p class="footnote" id="gate-note">The thresholds are read from the repository's <a href="https://github.com/nickdesjardins/LLMOps-gateway-evals/blob/main/evals/thresholds.json">evals/thresholds.json</a>; the measurements from <a href="recorded/retrieval.json">recorded/retrieval.json</a>, <a href="recorded/deepeval.json">recorded/deepeval.json</a> (26 October 2026, free judge models: the gate failed by one case, a real incomplete answer and one false alarm from the judge, both named in the report) and, once Ragas has run with a key, <a href="recorded/ragas.json">recorded/ragas.json</a>.</p>
+    <p class="footnote" id="gate-note">The thresholds are read from the repository's <a href="https://github.com/nickdesjardins/LLMOps-gateway-evals/blob/main/evals/thresholds.json">evals/thresholds.json</a>; the measurements from <a href="recorded/retrieval.json">recorded/retrieval.json</a>, <a href="recorded/deepeval.json">recorded/deepeval.json</a> (26 October 2026, free judge models: the gate failed by one case, a real incomplete answer and one false alarm from the judge, both named in the report) and, once Ragas has run with a key, <a href="recorded/ragas.json">recorded/ragas.json</a>. No baseline has been accepted yet (<code>evals/baseline.json</code> does not exist), so the regression rule is skipped. Ragas has no floor of its own: until a baseline exists, the gate only requires a judged run to produce its report.</p>
   </section>
 
   <section class="wrap section" id="stack" aria-labelledby="stack-title">
@@ -256,7 +257,7 @@
           <tr><td>Embeddings</td><td>BAAI/bge-small-en-v1.5 through fastembed, on the CPU, baked into the image</td><td>Any fastembed model (<code>FASTEMBED_MODEL</code>)</td></tr>
           <tr><td>Models</td><td>Two chains of free OpenRouter models, light and heavy</td><td>Claude Haiku 5.5 and Claude Opus 5.5 through the Anthropic SDK, with prompt caching; OpenAI or Gemini</td></tr>
           <tr><td>Tracing</td><td>In-process traces and percentiles; Langfuse Cloud's free plan when its keys are set</td><td>A self-hosted Langfuse (<code>LANGFUSE_BASE_URL</code>)</td></tr>
-          <tr><td>Evaluation</td><td>DeepEval and Ragas with free judge models, on GitHub Actions</td><td>A stronger judge: <code>EVAL_JUDGE_PROVIDER=anthropic</code>, a few cents a run</td></tr>
+          <tr><td>Evaluation</td><td>DeepEval with free judge models, in a GitHub Actions workflow (judged so far on a development machine only); Ragas wired in, not yet run with a real judge</td><td>A stronger judge: <code>EVAL_JUDGE_PROVIDER=anthropic</code>, a few cents a run</td></tr>
           <tr><td>Hosting</td><td>Render free web service (Docker), GitHub Pages for this page</td><td>Docker Compose, any container host</td></tr>
         </tbody>
       </table>

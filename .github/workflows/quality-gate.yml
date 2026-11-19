@@ -1,4 +1,4 @@
-# The quality gate: no pull request merges if the answers got worse.
+# The quality gate: the Gate check fails a pull request whose answers got worse.
 #
 #   changes     Decides whether the judged suite must run: it does when the pull request
 #               touches anything an answer depends on (app/, corpus/, evals/, the requirements).
@@ -14,9 +14,10 @@
 #               Hallucination rate above 5% or faithfulness below 0.95 fails it, and so does
 #               missing evidence: a judged run that should have happened and did not.
 #
-# Make "Quality gate / Gate" a required status check on main (docs/DEPLOY.md, step 6) and a
-# failing gate blocks the merge button. The gate job always runs, so a pull request that touches
-# only the README is not left waiting for a check that never reports.
+# Make "Quality gate / Gate" a required status check on main (docs/DEPLOY.md, step 7, item 5)
+# and a failing gate blocks the merge button; until then a red Gate does not stop a merge.
+# The gate job always runs, so a pull request that touches only the README is not left waiting
+# for a check that never reports.
 #
 # Pull requests from forks get no secrets: their judged suite cannot run and the gate says so.
 name: Quality gate

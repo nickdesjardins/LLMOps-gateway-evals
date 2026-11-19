@@ -12,8 +12,11 @@ has to answer before a generative feature goes to production:
   next one without dropping the request. Every step is a span of one trace, with p50, p95 and
   p99 per outcome, mirrored to Langfuse.
 * **Did the last change make the answers worse?** A GitHub Actions workflow answers a golden
-  set with the real pipeline, has DeepEval and Ragas judge every answer, and blocks the pull
-  request when the hallucination rate passes 5% or faithfulness drops below 0.95.
+  set with the real pipeline and has DeepEval judge the answers. Its Gate check fails when the
+  hallucination rate passes 5% or faithfulness drops below 0.95; once Gate is a required status
+  check, a failing gate disables the merge button. Ragas is wired in as a second judge but has
+  not yet run with a real judge. So far the judged suite has run only on a development machine
+  (26 October 2026), and the recorded run failed the gate by one case.
 
 | | |
 |---|---|
@@ -510,10 +513,12 @@ which no passage can back),
 `AnswerRelevancyMetric`, `ContextualPrecisionMetric`, and `HallucinationMetric` against the
 reference passages. Note that in DeepEval 4 the HallucinationMetric score is the share of
 reference passages the answer **agrees** with (higher is better; older releases scored the
-share of contradictions), so the report calls it `reference_agreement`. Ragas, as a second
-judge: `Faithfulness`, `AnswerRelevancy` (with the same local embedding model) and
-`ContextPrecisionWithReference`. Two checks need no judge: refusal accuracy and injection
-resistance.
+share of contradictions), so the report calls it `reference_agreement`. The DeepEval judge scores the 30
+cases that expect an answer; the other 7 should be refused (the 5 unanswerable questions and
+2 of the injection attempts) and get only the checks that need no judge. Ragas,
+wired in as a second judge but not yet run with a real judge: `Faithfulness`,
+`AnswerRelevancy` (with the same local embedding model) and `ContextPrecisionWithReference`.
+Two checks need no judge: refusal accuracy and injection resistance.
 
 **Hallucination rate**: the share of cases whose answer contradicts most of its reference
 passages, or has fewer than 70% of its claims supported, or answers a question the handbook
@@ -537,15 +542,19 @@ keeps the first opinions and the rate they alone give, and the gate's summary pr
 Missing evidence fails the gate: a report that should exist and does not, an errored case.
 The baseline (`evals/baseline.json`) is written on purpose, from a run someone looked at:
 `python -m evals.gate ... --write-baseline`. Without one, the regression rules are skipped and
-the summary says so.
+the summary says so. None has been accepted yet, so today the gate applies only the floors and the
+missing-evidence rule.
+Ragas has no floor of its own: until a baseline exists, the gate only requires a judged run to
+produce its report.
 
 **On GitHub Actions** (`quality-gate.yml`): a `changes` job decides whether the pull request
 touches anything an answer depends on (`app/`, `corpus/`, `evals/`, the requirements). The
 retrieval check runs every time; the judged suite runs when it matters: about 460 requests
 in all on the free models, which needs OpenRouter's 1,000-a-day allowance (a one-time 10 dollar
 credit purchase), not the 50 a day of an account without credits. The `Gate` job always runs, so a pull request
-that touches only the README is not left waiting for a check that never reports; make it a
-required status check and a failing gate disables the merge button (docs/DEPLOY.md, step 6).
+that touches only the README is not left waiting for a check that never reports. A failing gate
+disables the merge button only once Gate is a required status check (docs/DEPLOY.md, step 7,
+item 5). That ruleset is not set up yet, and the judged suite has not yet run on GitHub Actions.
 
 **The judge.** A small free model is a noisy judge. The thresholds are the specification's;
 whether a free judge holds the pipeline to them without false alarms was measured, not
