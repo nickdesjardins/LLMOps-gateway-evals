@@ -1,19 +1,19 @@
 {
  "version": 1,
- "tested": "2026-11-16T15:23:24Z",
+ "tested": "2026-11-20T15:47:01Z",
  "fingerprint": "55a0c650802846b4",
  "confirmed": true,
- "reason": "nothing usable is published",
+ "reason": "a model of the light chain is no longer listed: cohere/north-mini-code:free",
  "chains": {
   "light": [
    "nvidia/nemotron-3.5-lightning:free",
-   "cohere/north-mini-code:free",
-   "nvidia/nemotron-3.5-super-vl:free"
+   "nvidia/nemotron-3.5-super-vl:free",
+   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
   ],
   "heavy": [
    "nvidia/nemotron-3-ultra-550b-a55b:free",
-   "cohere/north-mini-code:free",
-   "dots-studio/dots-3-note-preview:free"
+   "dots-studio/dots-3-note-preview:free",
+   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
   ],
   "judge": [
    "dots-studio/dots-3-note-preview:free",
@@ -24,31 +24,31 @@
  "placings": {
   "light": {
    "nvidia/nemotron-3.5-lightning:free": "kept",
-   "cohere/north-mini-code:free": "kept",
-   "nvidia/nemotron-3.5-super-vl:free": "added"
+   "cohere/north-mini-code:free": "dropped",
+   "nvidia/nemotron-3.5-super-vl:free": "kept",
+   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": "added"
   },
   "heavy": {
    "nvidia/nemotron-3-ultra-550b-a55b:free": "kept",
-   "cohere/north-mini-code:free": "kept",
-   "dots-studio/dots-3-note-preview:free": "added"
+   "cohere/north-mini-code:free": "dropped",
+   "dots-studio/dots-3-note-preview:free": "kept",
+   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": "added"
   },
   "judge": {
    "dots-studio/dots-3-note-preview:free": "kept",
    "nvidia/nemotron-3-ultra-550b-a55b:free": "kept",
-   "recursive/flint-v1.0:free": "added"
+   "recursive/flint-v1.0:free": "kept"
   }
  },
  "free_list": [
   "inclusionai/ling-3.2-flash:free",
   "baidu/ernie-5.5-flash-preview:free",
-  "thinkingmachines/inkling-2-small:free",
   "liquid/lfm-3-1.7b:free",
   "particle-ai/particle-1:free",
   "recursive/flint-v1.0:free",
   "nvidia/nemotron-3.5-super-vl:free",
   "dots-studio/dots-3-note-preview:free",
   "nvidia/nemotron-3.5-lightning:free",
-  "cohere/north-mini-code:free",
   "nvidia/nemotron-3-ultra-550b-a55b:free",
   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
   "google/gemma-4-26b-a4b-it:free",
@@ -63,73 +63,73 @@
     "heavy",
     "judge"
    ],
-   "median_s": 0.62,
+   "median_s": 0.95,
    "results": [
     {
      "case_id": "grounded",
      "outcome": "right",
-     "seconds": 0.45,
+     "seconds": 0.6,
      "why": "",
      "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 0.44,
+     "seconds": 0.33,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
      "outcome": "right",
-     "seconds": 0.83,
+     "seconds": 1.29,
      "why": "",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 0.79,
+     "seconds": 1.77,
      "why": "",
      "failure": null
     }
    ]
   },
   {
-   "model": "cohere/north-mini-code:free",
+   "model": "nvidia/nemotron-3.5-super-vl:free",
    "verdict": "passed",
    "roles": [
     "light",
     "heavy",
     "judge"
    ],
-   "median_s": 0.48,
+   "median_s": 0.99,
    "results": [
     {
      "case_id": "grounded",
      "outcome": "right",
-     "seconds": 0.48,
+     "seconds": 0.61,
      "why": "",
      "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 0.28,
+     "seconds": 0.51,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
      "outcome": "right",
-     "seconds": 0.75,
+     "seconds": 3.13,
      "why": "",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 0.49,
+     "seconds": 1.38,
      "why": "",
      "failure": null
     }
@@ -143,33 +143,33 @@
     "heavy",
     "judge"
    ],
-   "median_s": 1.93,
+   "median_s": 1.15,
    "results": [
     {
      "case_id": "grounded",
      "outcome": "right",
-     "seconds": 2.03,
+     "seconds": 0.79,
      "why": "",
      "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 1.83,
+     "seconds": 0.79,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
      "outcome": "right",
-     "seconds": 3.03,
+     "seconds": 1.5,
      "why": "",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 1.27,
+     "seconds": 2.07,
      "why": "",
      "failure": null
     }
@@ -183,33 +183,186 @@
     "heavy",
     "judge"
    ],
-   "median_s": 1.59,
+   "median_s": 6.56,
    "results": [
     {
      "case_id": "grounded",
      "outcome": "right",
-     "seconds": 1.4,
+     "seconds": 5.43,
      "why": "",
      "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 1.11,
+     "seconds": 5.81,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
      "outcome": "right",
-     "seconds": 2.92,
+     "seconds": 7.32,
      "why": "",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 1.78,
+     "seconds": 8.62,
+     "why": "",
+     "failure": null
+    }
+   ]
+  },
+  {
+   "model": "recursive/flint-v1.0:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "judge"
+   ],
+   "median_s": 4.29,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 5.66,
+     "why": "",
+     "failure": null
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 1.57,
+     "why": "",
+     "failure": null
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "wrong",
+     "seconds": 12.28,
+     "why": "cut off before any text (thinking used the budget?)",
+     "failure": "invalid_output"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 2.93,
+     "why": "",
+     "failure": null
+    }
+   ]
+  },
+  {
+   "model": "baidu/ernie-5.5-flash-preview:free",
+   "verdict": "passed",
+   "roles": [
+    "light",
+    "heavy",
+    "judge"
+   ],
+   "median_s": 1.6,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "right",
+     "seconds": 1.41,
+     "why": "",
+     "failure": null
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "right",
+     "seconds": 1.06,
+     "why": "",
+     "failure": null
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "right",
+     "seconds": 3.83,
+     "why": "",
+     "failure": null
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 1.79,
+     "why": "",
+     "failure": null
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-26b-a4b-it:free",
+   "verdict": "not_judged",
+   "roles": [],
+   "median_s": null,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.12,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.27,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.19,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "no_answer",
+     "seconds": 0.17,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    }
+   ]
+  },
+  {
+   "model": "google/gemma-4-31b-it:free",
+   "verdict": "passed",
+   "roles": [
+    "judge"
+   ],
+   "median_s": 3.48,
+   "results": [
+    {
+     "case_id": "grounded",
+     "outcome": "no_answer",
+     "seconds": 0.15,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "refusal",
+     "outcome": "no_answer",
+     "seconds": 0.24,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "synthesis",
+     "outcome": "no_answer",
+     "seconds": 0.48,
+     "why": "rate limited (429)",
+     "failure": "rate_limited"
+    },
+    {
+     "case_id": "judge",
+     "outcome": "right",
+     "seconds": 3.48,
      "why": "",
      "failure": null
     }
@@ -224,85 +377,30 @@
     {
      "case_id": "grounded",
      "outcome": "no_answer",
-     "seconds": 1.09,
+     "seconds": 0.61,
      "why": "rate limited (429)",
      "failure": "rate_limited"
     },
     {
      "case_id": "refusal",
      "outcome": "no_answer",
-     "seconds": 1.25,
+     "seconds": 0.82,
      "why": "rate limited (429)",
      "failure": "rate_limited"
     },
     {
      "case_id": "synthesis",
      "outcome": "no_answer",
-     "seconds": 0.59,
+     "seconds": 1.04,
      "why": "rate limited (429)",
      "failure": "rate_limited"
     },
     {
      "case_id": "judge",
      "outcome": "no_answer",
-     "seconds": 0.81,
+     "seconds": 1.15,
      "why": "rate limited (429)",
      "failure": "rate_limited"
-    }
-   ]
-  },
-  {
-   "model": "baidu/ernie-5.5-flash-preview:free",
-   "verdict": "passed",
-   "roles": [
-    "light",
-    "heavy",
-    "judge"
-   ],
-   "median_s": 1.98,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "right",
-     "seconds": 1.42,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "refusal",
-     "outcome": "right",
-     "seconds": 1.83,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "synthesis",
-     "outcome": "right",
-     "seconds": 3.1,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "judge",
-     "outcome": "right",
-     "seconds": 2.12,
-     "why": "",
-     "failure": null
-    }
-   ]
-  },
-  {
-   "model": "thinkingmachines/inkling-2-small:free",
-   "verdict": "unreachable",
-   "roles": [],
-   "median_s": null,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "unreachable",
-     "seconds": 0.08,
-     "why": "refused for this account (403)",
-     "failure": "forbidden"
     }
    ]
   },
@@ -312,152 +410,33 @@
    "roles": [
     "judge"
    ],
-   "median_s": 4.56,
+   "median_s": 193.44,
    "results": [
     {
      "case_id": "grounded",
-     "outcome": "wrong",
-     "seconds": 2.58,
-     "why": "cut off before any text (thinking used the budget?)",
-     "failure": "invalid_output"
+     "outcome": "no_answer",
+     "seconds": 24.9,
+     "why": "HTTP 504",
+     "failure": "upstream"
     },
     {
      "case_id": "refusal",
-     "outcome": "wrong",
-     "seconds": 5.3,
-     "why": "cut off before any text (thinking used the budget?)",
-     "failure": "invalid_output"
+     "outcome": "no_answer",
+     "seconds": 24.07,
+     "why": "HTTP 504",
+     "failure": "upstream"
     },
     {
      "case_id": "synthesis",
      "outcome": "wrong",
-     "seconds": 6.01,
-     "why": "cut off before any text (thinking used the budget?)",
-     "failure": "invalid_output"
-    },
-    {
-     "case_id": "judge",
-     "outcome": "right",
-     "seconds": 3.83,
-     "why": "",
-     "failure": null
-    }
-   ]
-  },
-  {
-   "model": "particle-ai/particle-1:free",
-   "verdict": "passed",
-   "roles": [
-    "light",
-    "heavy",
-    "judge"
-   ],
-   "median_s": 2.7,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "right",
-     "seconds": 1.85,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "refusal",
-     "outcome": "right",
-     "seconds": 4.29,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "synthesis",
-     "outcome": "right",
-     "seconds": 2.49,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "judge",
-     "outcome": "right",
-     "seconds": 2.91,
-     "why": "",
-     "failure": null
-    }
-   ]
-  },
-  {
-   "model": "recursive/flint-v1.0:free",
-   "verdict": "passed",
-   "roles": [
-    "light",
-    "judge"
-   ],
-   "median_s": 2.87,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "right",
-     "seconds": 3.21,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "refusal",
-     "outcome": "right",
-     "seconds": 1.48,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "synthesis",
-     "outcome": "wrong",
-     "seconds": 8.78,
+     "seconds": 247.89,
      "why": "cut off at the ceiling",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 2.52,
-     "why": "",
-     "failure": null
-    }
-   ]
-  },
-  {
-   "model": "nvidia/nemotron-3.5-super-vl:free",
-   "verdict": "passed",
-   "roles": [
-    "light",
-    "heavy",
-    "judge"
-   ],
-   "median_s": 0.78,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "right",
-     "seconds": 0.78,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "refusal",
-     "outcome": "right",
-     "seconds": 0.48,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "synthesis",
-     "outcome": "right",
-     "seconds": 2.08,
-     "why": "",
-     "failure": null
-    },
-    {
-     "case_id": "judge",
-     "outcome": "right",
-     "seconds": 0.78,
+     "seconds": 139.0,
      "why": "",
      "failure": null
     }
@@ -471,111 +450,77 @@
     "heavy",
     "judge"
    ],
-   "median_s": 1.32,
+   "median_s": 0.87,
    "results": [
     {
      "case_id": "grounded",
      "outcome": "right",
-     "seconds": 0.57,
+     "seconds": 0.6,
      "why": "",
      "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 1.06,
+     "seconds": 0.59,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
      "outcome": "right",
-     "seconds": 1.58,
+     "seconds": 1.51,
      "why": "",
      "failure": null
     },
     {
      "case_id": "judge",
      "outcome": "right",
-     "seconds": 2.58,
+     "seconds": 1.14,
      "why": "",
      "failure": null
     }
    ]
   },
   {
-   "model": "google/gemma-4-26b-a4b-it:free",
+   "model": "particle-ai/particle-1:free",
    "verdict": "passed",
    "roles": [
-    "judge"
+    "light",
+    "heavy"
    ],
-   "median_s": 3.04,
+   "median_s": 0.97,
    "results": [
     {
      "case_id": "grounded",
-     "outcome": "no_answer",
-     "seconds": 0.13,
-     "why": "rate limited (429)",
-     "failure": "rate_limited"
+     "outcome": "right",
+     "seconds": 0.97,
+     "why": "",
+     "failure": null
     },
     {
      "case_id": "refusal",
      "outcome": "right",
-     "seconds": 0.64,
+     "seconds": 0.58,
      "why": "",
      "failure": null
     },
     {
      "case_id": "synthesis",
-     "outcome": "no_answer",
-     "seconds": 0.22,
-     "why": "rate limited (429)",
-     "failure": "rate_limited"
-    },
-    {
-     "case_id": "judge",
      "outcome": "right",
-     "seconds": 5.45,
+     "seconds": 1.04,
      "why": "",
      "failure": null
-    }
-   ]
-  },
-  {
-   "model": "google/gemma-4-31b-it:free",
-   "verdict": "not_judged",
-   "roles": [],
-   "median_s": null,
-   "results": [
-    {
-     "case_id": "grounded",
-     "outcome": "no_answer",
-     "seconds": 0.13,
-     "why": "rate limited (429)",
-     "failure": "rate_limited"
-    },
-    {
-     "case_id": "refusal",
-     "outcome": "no_answer",
-     "seconds": 0.18,
-     "why": "rate limited (429)",
-     "failure": "rate_limited"
-    },
-    {
-     "case_id": "synthesis",
-     "outcome": "no_answer",
-     "seconds": 0.17,
-     "why": "rate limited (429)",
-     "failure": "rate_limited"
     },
     {
      "case_id": "judge",
      "outcome": "no_answer",
-     "seconds": 0.23,
+     "seconds": 0.42,
      "why": "rate limited (429)",
      "failure": "rate_limited"
     }
    ]
   }
- ]
+ ],
+ "candidate_cursor": 0
 }
